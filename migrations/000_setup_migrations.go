@@ -2,7 +2,6 @@ package migrations
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
@@ -25,8 +24,6 @@ type Context struct {
 var context = &Context{}
 
 func init() {
-	fmt.Println("DATABASE_URL")
-	fmt.Println(os.Getenv("DATABASE_URL"))
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
@@ -35,10 +32,7 @@ func init() {
 	Migrations = nomad.NewList(pg.NewVersionStore(db))
 }
 
+// Run pending migrations
 func Run() {
-	fmt.Printf("%q", context)
-	err := Migrations.Run(&context)
-	if err != nil {
-		log.Fatal(err)
-	}
+	Migrations.Run(context)
 }

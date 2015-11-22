@@ -8,7 +8,7 @@ import (
 
 func init() {
 	migration := &nomad.Migration{
-		Version: "2015-11-12_21:53:19",
+		Version: "2015-11-22_18:07:05",
 		Up: func(ctx interface{}) error {
 			c := ctx.(Context)
 			fmt.Println("Up")
