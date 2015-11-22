@@ -46,7 +46,15 @@ var RunMigrationCmd = &cobra.Command{
 	Use:   "migration:run",
 	Short: "run all pending migrations",
 	Run: func(cmd *cobra.Command, args []string) {
-		migrations.Run()
+		migrations.Migrations.Run()
+	},
+}
+
+var RollbackMigrationCmd = &cobra.Command{
+	Use:   "migration:rollback",
+	Short: "rollsback the latest migration",
+	Run: func(cmd *cobra.Command, args []string) {
+		migrations.Migrations.Rollback()
 	},
 }
 
@@ -54,6 +62,7 @@ func main() {
 	GocardCmd.AddCommand(ServerCmd)
 	GocardCmd.AddCommand(NewMigrationCmd)
 	GocardCmd.AddCommand(RunMigrationCmd)
+	GocardCmd.AddCommand(RollbackMigrationCmd)
 	GocardCmd.Execute()
 }
 

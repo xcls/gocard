@@ -7,16 +7,17 @@ import (
 )
 
 func init() {
+	fmt.Println("Hello")
 	migration := &nomad.Migration{
 		Version: "2015-11-22_18:07:05",
 		Up: func(ctx interface{}) error {
-			c := ctx.(Context)
+			c := ctx.(*Context)
 			fmt.Println("Up")
 			fmt.Println(c)
 			return nil
 		},
 		Down: func(ctx interface{}) error {
-			c := ctx.(Context)
+			c := ctx.(*Context)
 			fmt.Println("Down")
 			fmt.Println(c)
 			return nil

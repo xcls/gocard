@@ -3,8 +3,8 @@ package migrations
 import (
 	"database/sql"
 	"log"
-	"os"
 
+	"github.com/mcls/gocard/config"
 	"github.com/mcls/nomad"
 	"github.com/mcls/nomad/pg"
 	// Setup postgres driver
@@ -24,15 +24,10 @@ type Context struct {
 var context = &Context{}
 
 func init() {
-	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	db, err := sql.Open("postgres", config.DatabaseUrl())
 	if err != nil {
 		log.Fatal(err)
 	}
 	context.DB = db
-	Migrations = nomad.NewList(pg.NewVersionStore(db))
-}
-
-// Run pending migrations
-func Run() {
-	Migrations.Run(context)
+	Migrations = nomad.NewList(pg.NewVersionStore(db), context)
 }
