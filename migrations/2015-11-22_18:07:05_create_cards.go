@@ -7,7 +7,6 @@ import (
 )
 
 func init() {
-	fmt.Println("Hello")
 	migration := &nomad.Migration{
 		Version: "2015-11-22_18:07:05",
 		Up: func(ctx interface{}) error {
