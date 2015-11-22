@@ -33,36 +33,11 @@ var ServerCmd = &cobra.Command{
 	},
 }
 
-var NewMigrationCmd = &cobra.Command{
-	Use:   "migration:new",
-	Short: "create migration",
-	Run: func(cmd *cobra.Command, args []string) {
-		m := nomad.NewMigrator("./migrations")
-		m.Create(args[0])
-	},
-}
-
-var RunMigrationCmd = &cobra.Command{
-	Use:   "migration:run",
-	Short: "run all pending migrations",
-	Run: func(cmd *cobra.Command, args []string) {
-		migrations.Migrations.Run()
-	},
-}
-
-var RollbackMigrationCmd = &cobra.Command{
-	Use:   "migration:rollback",
-	Short: "rollsback the latest migration",
-	Run: func(cmd *cobra.Command, args []string) {
-		migrations.Migrations.Rollback()
-	},
-}
+var MigrationCmd = nomad.NewMigrationCmd(migrations.Migrations, "./migrations")
 
 func main() {
 	GocardCmd.AddCommand(ServerCmd)
-	GocardCmd.AddCommand(NewMigrationCmd)
-	GocardCmd.AddCommand(RunMigrationCmd)
-	GocardCmd.AddCommand(RollbackMigrationCmd)
+	GocardCmd.AddCommand(MigrationCmd)
 	GocardCmd.Execute()
 }
 
