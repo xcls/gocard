@@ -12,8 +12,8 @@ func init() {
 			_, err := c.DB.Exec(`
 			CREATE TABLE cards (
 				id serial PRIMARY KEY,
-				front text NOT NULL,
-				back text NOT NULL,
+				front text NOT NULL CHECK(length(front) < 4000),
+				back text NOT NULL CHECK(length(front) < 4000),
 				created_at timestamp with time zone DEFAULT(current_timestamp)
 			)`)
 			return err
