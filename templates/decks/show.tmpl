@@ -2,3 +2,13 @@
 <p>
 <a href="/decks/{{.Deck.Id}}/cards/new" class="btn btn-default">Add Card</a>
 </p>
+
+<table class="table">
+  {{range .Cards}}
+  <tr>
+    <td>{{.Id}}</td>
+    <td>{{.Context}}</td>
+    <td>{{.}}</td>
+  </tr>
+  {{end}}
+</table>

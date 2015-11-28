@@ -3,17 +3,17 @@
 <form method="post" action="/decks/{{.Deck.Id}}/cards/new" class="form form-vertical">
   <div class="form-group">
     <label>Context</label>
-    <input name="card[context]" class="form-control">
+    <input name="Context" class="form-control">
   </div>
 
   <div class="form-group">
     <label>Front</label>
-    <textarea name="card[front]" class="form-control"></textarea>
+    <textarea name="Front" class="form-control"></textarea>
   </div>
 
   <div class="form-group">
     <label>Back</label>
-    <textarea name="card[back]" class="form-control"></textarea>
+    <textarea name="Back" class="form-control"></textarea>
   </div>
 
   <input type="submit" class="btn btn-default">

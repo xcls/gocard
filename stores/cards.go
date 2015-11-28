@@ -60,6 +60,16 @@ func (s *Cards) All() ([]*CardRecord, error) {
 	return cards, err
 }
 
+func (s *Cards) AllByDeckId(id int) ([]*CardRecord, error) {
+	var cards []*CardRecord
+	_, err := dbmap.Select(
+		&cards,
+		"SELECT * FROM cards WHERE deck_id = $1 ORDER BY created_at DESC",
+		id,
+	)
+	return cards, err
+}
+
 func (s *Decks) Insert(deck *DeckRecord) error {
 	return dbmap.Insert(deck)
 }
