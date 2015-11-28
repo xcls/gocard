@@ -1,6 +1,6 @@
-<h2>New Card</h2>
+<h2>New Card for {{.Deck.Name}}</h2>
 
-<form class="form form-vertical">
+<form method="post" action="/decks/{{.Deck.Id}}/cards/new" class="form form-vertical">
   <div class="form-group">
     <label>Context</label>
     <input name="card[context]" class="form-control">

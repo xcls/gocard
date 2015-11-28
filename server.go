@@ -23,10 +23,10 @@ func startServer() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", indexHandler)
-	r.HandleFunc("/cards/new", NewCardHandler)
 
-	r.HandleFunc("/decks/{id:[0-9]+}", ShowDeckHandler)
 	r.HandleFunc("/decks/new", NewDeckHandler)
+	r.HandleFunc("/decks/{id:[0-9]+}", ShowDeckHandler)
+	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", NewCardHandler)
 
 	port := ":8080"
 	log.Printf("Starting server on %q\n", port)
@@ -42,13 +42,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	renderer.HTML(w, http.StatusOK, "home", map[string]interface{}{
 		"decks": decks,
-		"lol":   "lolsies",
-		"hah":   []string{"hello", "hello"},
 	})
-}
-
-func NewCardHandler(w http.ResponseWriter, r *http.Request) {
-	renderer.HTML(w, http.StatusOK, "cards/new", nil)
 }
 
 type DeckForm struct {
@@ -100,4 +94,59 @@ func ShowDeckHandler(w http.ResponseWriter, r *http.Request) {
 	renderer.HTML(w, http.StatusOK, "decks/show", map[string]interface{}{
 		"Deck": deck,
 	})
+}
+
+type CardForm struct {
+	Context string
+	Front   string
+	Back    string
+}
+
+func (f *CardForm) ToRecord() *stores.CardRecord {
+	return &stores.CardRecord{
+		Context: f.Context,
+		Front:   f.Front,
+		Back:    f.Back,
+	}
+}
+
+func NewCardHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	deck, err := stores.Store.Decks.Find(id)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	if deck == nil {
+		http.Error(w, fmt.Sprintf("Can't find deck with id %d", id), 500)
+		return
+	}
+
+	card := new(CardForm)
+	if r.Method == "GET" {
+		renderer.HTML(w, http.StatusOK, "cards/new", map[string]interface{}{
+			"Deck": deck,
+			"Card": card,
+		})
+	} else {
+		err := decoder.Decode(card, r.PostForm)
+		if err != nil {
+			fmt.Fprintf(w, "%q \n", r.PostForm)
+			http.Error(w, fmt.Sprintf("Can't decode: %s", err.Error()), 500)
+			return
+		}
+
+		record := card.ToRecord()
+		record.DeckId = deck.Id
+		if err := stores.Store.Cards.Insert(record); err != nil {
+			http.Error(w, fmt.Sprintf("Can't persist: %s", err.Error()), 500)
+			return
+		}
+		fmt.Fprintf(w, "%q \n", record)
+	}
 }
