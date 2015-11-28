@@ -18,14 +18,20 @@ func resetDatabase(t *testing.T) {
 
 func TestCardRecord_Insert(t *testing.T) {
 	resetDatabase(t)
-	card := &CardRecord{
-		Front: "Hello",
-		Back:  "World",
-	}
-	if err := Store().Cards.Insert(card); err != nil {
+	deck := &DeckRecord{Name: "Coding Knowledge"}
+	if err := Store.Decks.Insert(deck); err != nil {
 		t.Fatal(err)
 	}
-	cs, err := Store().Cards.All()
+	card := &CardRecord{
+		Context: "Programming",
+		Front:   "Hello [...]",
+		Back:    "Hello World",
+		DeckId:  deck.Id,
+	}
+	if err := Store.Cards.Insert(card); err != nil {
+		t.Fatal(err)
+	}
+	cs, err := Store.Cards.All()
 	if err != nil {
 		t.Fatal(err)
 	}

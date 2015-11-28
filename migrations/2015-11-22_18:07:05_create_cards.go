@@ -11,17 +11,31 @@ func init() {
 		Up: func(ctx interface{}) error {
 			c := ctx.(*pg.Context)
 			_, err := c.Tx.Exec(`
+			CREATE TABLE decks (
+				id serial PRIMARY KEY,
+				name text NOT NULL CHECK(length(name) < 300),
+				created_at timestamp with time zone DEFAULT(current_timestamp)
+			)`)
+			if err != nil {
+				return err
+			}
+			_, err = c.Tx.Exec(`
 			CREATE TABLE cards (
 				id serial PRIMARY KEY,
+				context text NOT NULL CHECK(length(context) < 300),
 				front text NOT NULL CHECK(length(front) < 4000),
 				back text NOT NULL CHECK(length(back) < 4000),
+				deck_id integer REFERENCES decks,
 				created_at timestamp with time zone DEFAULT(current_timestamp)
 			)`)
 			return err
 		},
 		Down: func(ctx interface{}) error {
 			c := ctx.(*pg.Context)
-			_, err := c.Tx.Exec("DROP TABLE cards")
+			if _, err := c.Tx.Exec("DROP TABLE IF EXISTS decks"); err != nil {
+				return err
+			}
+			_, err := c.Tx.Exec("DROP TABLE IF EXISTS cards")
 			return err
 		},
 	}
