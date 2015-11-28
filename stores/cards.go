@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/coopernurse/gorp"
+	"github.com/go-gorp/gorp"
 	"github.com/mcls/gocard/dbutil"
 )
 
@@ -62,6 +62,16 @@ func (s *Cards) All() ([]*CardRecord, error) {
 
 func (s *Decks) Insert(deck *DeckRecord) error {
 	return dbmap.Insert(deck)
+}
+
+func (s *Decks) Find(id int) (*DeckRecord, error) {
+	var deck *DeckRecord
+	err := dbmap.SelectOne(&deck, "SELECT * FROM decks WHERE id = $1", id)
+	if err != nil {
+		return nil, err
+	} else {
+		return deck, nil
+	}
 }
 
 func (s *Decks) All() ([]*DeckRecord, error) {

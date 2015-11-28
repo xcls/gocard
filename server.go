@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/Schema"
+	"github.com/gorilla/mux"
 	"github.com/mcls/gocard/stores"
 	"github.com/unrolled/render"
 )
@@ -18,12 +20,17 @@ var renderer = render.New(render.Options{
 })
 
 func startServer() {
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/cards/new", NewCardHandler)
-	http.HandleFunc("/decks/new", NewDeckHandler)
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", indexHandler)
+	r.HandleFunc("/cards/new", NewCardHandler)
+
+	r.HandleFunc("/decks/{id:[0-9]+}", ShowDeckHandler)
+	r.HandleFunc("/decks/new", NewDeckHandler)
 
 	port := ":8080"
 	log.Printf("Starting server on %q\n", port)
+	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
 
@@ -76,4 +83,21 @@ func NewDeckHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%q \n", deck)
 		fmt.Fprintf(w, "%q \n", record)
 	}
+}
+
+func ShowDeckHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "id arg: "+err.Error(), 500)
+		return
+	}
+	deck, err := stores.Store.Decks.Find(id)
+	if err != nil {
+		http.Error(w, "find "+err.Error(), 500)
+		return
+	}
+	renderer.HTML(w, http.StatusOK, "decks/show", map[string]interface{}{
+		"Deck": deck,
+	})
 }
