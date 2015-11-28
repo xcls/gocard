@@ -1,1 +1,14 @@
 <h1>Hello {{.}}.</h1>
+
+<table class="table">
+  {{range .decks}}
+  <tr>
+    <td>
+      {{.Id}}
+    </td>
+    <td>
+      {{.Name}}
+    </td>
+  </tr>
+  {{end}}
+</table>
