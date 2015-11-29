@@ -22,11 +22,11 @@ var renderer = render.New(render.Options{
 func startServer() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", indexHandler)
+	r.HandleFunc("/", errorHandler(indexHandler))
 
-	r.HandleFunc("/decks/new", NewDeckHandler)
-	r.HandleFunc("/decks/{id:[0-9]+}", ShowDeckHandler)
-	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", NewCardHandler)
+	r.HandleFunc("/decks/new", errorHandler(NewDeckHandler))
+	r.HandleFunc("/decks/{id:[0-9]+}", errorHandler(ShowDeckHandler))
+	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", errorHandler(NewCardHandler))
 
 	port := ":8080"
 	log.Printf("Starting server on %q\n", port)
@@ -34,15 +34,25 @@ func startServer() {
 	log.Fatal(http.ListenAndServe(port, nil))
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
+func indexHandler(w http.ResponseWriter, r *http.Request) error {
 	decks, err := stores.Store.Decks.All()
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		return err
 	}
 	renderer.HTML(w, http.StatusOK, "home", map[string]interface{}{
 		"decks": decks,
 	})
+	return nil
+}
+
+func errorHandler(f func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := f(w, r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("handling %q: %v \n", r.RequestURI, err)
+		}
+	}
 }
 
 type DeckForm struct {
@@ -53,53 +63,49 @@ func (f *DeckForm) ToRecord() *stores.DeckRecord {
 	return &stores.DeckRecord{Name: f.Name}
 }
 
-func NewDeckHandler(w http.ResponseWriter, r *http.Request) {
+func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
 		renderer.HTML(w, http.StatusOK, "decks/new", nil)
-	} else {
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, fmt.Sprintf("Can't parse form: %s", err.Error()), 500)
-			return
-		}
-		deck := new(DeckForm)
-		err := decoder.Decode(deck, r.PostForm)
-		if err != nil {
-			fmt.Fprintf(w, "%q \n", r.PostForm)
-			http.Error(w, fmt.Sprintf("Can't decode: %s", err.Error()), 500)
-			return
-		}
-
-		record := deck.ToRecord()
-		if err := stores.Store.Decks.Insert(record); err != nil {
-			http.Error(w, fmt.Sprintf("Can't persist: %s", err.Error()), 500)
-			return
-		}
-		fmt.Fprintf(w, "%q \n", deck)
-		fmt.Fprintf(w, "%q \n", record)
+		return nil
 	}
+
+	if err := r.ParseForm(); err != nil {
+		return err
+	}
+	deck := new(DeckForm)
+	err := decoder.Decode(deck, r.PostForm)
+	if err != nil {
+		return err
+	}
+
+	record := deck.ToRecord()
+	if err := stores.Store.Decks.Insert(record); err != nil {
+		return err
+	}
+	fmt.Fprintf(w, "%q \n", deck)
+	fmt.Fprintf(w, "%q \n", record)
+	return nil
 }
 
-func ShowDeckHandler(w http.ResponseWriter, r *http.Request) {
+func ShowDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "id arg: "+err.Error(), 500)
-		return
+		return err
 	}
 	deck, err := stores.Store.Decks.Find(id)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		return err
 	}
 	cards, err := stores.Store.Cards.AllByDeckId(id)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		return err
 	}
 	renderer.HTML(w, http.StatusOK, "decks/show", map[string]interface{}{
 		"Deck":  deck,
 		"Cards": cards,
 	})
+	return nil
 }
 
 type CardForm struct {
@@ -117,21 +123,18 @@ func (f *CardForm) ToRecord() *stores.CardRecord {
 	}
 }
 
-func NewCardHandler(w http.ResponseWriter, r *http.Request) {
+func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		return err
 	}
 	deck, err := stores.Store.Decks.Find(id)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		return err
 	}
 	if deck == nil {
-		http.Error(w, fmt.Sprintf("Can't find deck with id %d", id), 500)
-		return
+		return err
 	}
 
 	card := new(CardForm)
@@ -142,14 +145,11 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	} else {
 		if err := r.ParseForm(); err != nil {
-			http.Error(w, fmt.Sprintf("Can't parse form: %s", err.Error()), 500)
-			return
+			return err
 		}
 		err := decoder.Decode(card, r.PostForm)
 		if err != nil {
-			fmt.Fprintf(w, "%q \n", r.PostForm)
-			http.Error(w, fmt.Sprintf("Can't decode: %s", err.Error()), 500)
-			return
+			return err
 		}
 
 		record := card.ToRecord()
@@ -157,11 +157,11 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(card)
 		fmt.Println(record)
 		if err := stores.Store.Cards.Insert(record); err != nil {
-			http.Error(w, fmt.Sprintf("Can't persist: %s", err.Error()), 500)
-			return
+			return err
 		}
 		http.Redirect(w, r,
 			fmt.Sprintf("/decks/%d", record.DeckId),
 			http.StatusFound)
 	}
+	return nil
 }
