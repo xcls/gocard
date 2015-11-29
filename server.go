@@ -8,6 +8,8 @@ import (
 
 	"github.com/gorilla/Schema"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
+	"github.com/mcls/gocard/config"
 	"github.com/mcls/gocard/stores"
 	"github.com/unrolled/render"
 )
@@ -18,6 +20,10 @@ var renderer = render.New(render.Options{
 	Directory: "templates",
 	Layout:    "layout",
 })
+
+var jar = sessions.NewCookieStore([]byte(config.CookieSecret()))
+
+type tplVars map[string]interface{}
 
 func startServer() {
 	r := mux.NewRouter()
@@ -39,7 +45,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	renderer.HTML(w, http.StatusOK, "home", map[string]interface{}{
+	renderHTML(w, r, http.StatusOK, "home", tplVars{
 		"decks": decks,
 	})
 	return nil
@@ -65,8 +71,7 @@ func (f *DeckForm) ToRecord() *stores.DeckRecord {
 
 func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
-		renderer.HTML(w, http.StatusOK, "decks/new", nil)
-		return nil
+		return renderHTML(w, r, http.StatusOK, "decks/new", nil)
 	}
 
 	if err := r.ParseForm(); err != nil {
@@ -101,11 +106,10 @@ func ShowDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	renderer.HTML(w, http.StatusOK, "decks/show", map[string]interface{}{
+	return renderHTML(w, r, http.StatusOK, "decks/show", tplVars{
 		"Deck":  deck,
 		"Cards": cards,
 	})
-	return nil
 }
 
 type CardForm struct {
@@ -139,7 +143,7 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 
 	card := new(CardForm)
 	if r.Method == "GET" {
-		renderer.HTML(w, http.StatusOK, "cards/new", map[string]interface{}{
+		return renderHTML(w, r, http.StatusOK, "cards/new", tplVars{
 			"Deck": deck,
 			"Card": card,
 		})
@@ -159,9 +163,49 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 		if err := stores.Store.Cards.Insert(record); err != nil {
 			return err
 		}
+		if err := addFlash(w, r, "Saved Card: "+record.Context); err != nil {
+			return err
+		}
 		http.Redirect(w, r,
 			fmt.Sprintf("/decks/%d", record.DeckId),
 			http.StatusFound)
 	}
 	return nil
+}
+
+func renderHTML(w http.ResponseWriter, r *http.Request, status int, tpl string, vars tplVars) error {
+	if vars == nil {
+		vars = tplVars{}
+	}
+	flashes, err := getFlashes(w, r)
+	if err != nil {
+		return err
+	}
+	vars["Flashes"] = flashes
+	renderer.HTML(w, status, tpl, vars)
+	return nil
+}
+
+func addFlash(w http.ResponseWriter, r *http.Request, msg string) error {
+	session, err := jar.Get(r, "ses")
+	if err != nil {
+		return err
+	}
+	session.AddFlash(msg)
+	if err := session.Save(r, w); err != nil {
+		return err
+	}
+	return nil
+}
+
+func getFlashes(w http.ResponseWriter, r *http.Request) ([]interface{}, error) {
+	session, err := jar.Get(r, "ses")
+	if err != nil {
+		return nil, err
+	}
+	flashes := session.Flashes()
+	if err := session.Save(r, w); err != nil {
+		return nil, err
+	}
+	return flashes, nil
 }

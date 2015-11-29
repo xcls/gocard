@@ -23,6 +23,9 @@
     </nav>
 
     <div class="container">
+      {{range .Flashes}}
+      <div class="alert alert-info">{{.}}</div>
+      {{end}}
       {{yield}}
       <br>
       <pre>{{.}}</pre>
