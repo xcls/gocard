@@ -87,8 +87,12 @@ func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	if err := stores.Store.Decks.Insert(record); err != nil {
 		return err
 	}
-	fmt.Fprintf(w, "%q \n", deck)
-	fmt.Fprintf(w, "%q \n", record)
+	if err := addFlash(w, r, "Saved Deck: "+record.Name); err != nil {
+		return err
+	}
+	http.Redirect(w, r,
+		fmt.Sprintf("/decks/%d", record.Id),
+		http.StatusFound)
 	return nil
 }
 
@@ -158,8 +162,7 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 
 		record := card.ToRecord()
 		record.DeckId = deck.Id
-		fmt.Println(card)
-		fmt.Println(record)
+		log.Printf("Creating card: %q \n", record)
 		if err := stores.Store.Cards.Insert(record); err != nil {
 			return err
 		}
