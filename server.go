@@ -69,22 +69,10 @@ func (f *DeckForm) ToRecord() *stores.DeckRecord {
 	return &stores.DeckRecord{Name: f.Name}
 }
 
-func (f *DeckForm) Validate() error {
-	if err := validateLength("Name", f.Name, 0); err != nil {
-		return err
-	}
-	return nil
-}
-
-func validateLength(label, val string, length int) error {
-	if len(val) <= length {
-		if length <= 0 {
-			return fmt.Errorf("%s can't be blank", label)
-		} else {
-			return fmt.Errorf("%s must be at least %d characters long", label, length)
-		}
-	}
-	return nil
+func (f *DeckForm) Validate() []error {
+	vd := NewValidator()
+	vd.ValidateMinLength("Name", f.Name, 0)
+	return vd.Errors()
 }
 
 func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
@@ -104,10 +92,10 @@ func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	if err := deck.Validate(); err != nil {
+	if errs := deck.Validate(); len(errs) != 0 {
 		return renderHTML(w, r, http.StatusOK, "decks/new", tplVars{
 			"DeckForm":   deck,
-			"DeckErrors": []error{err},
+			"DeckErrors": errs,
 		})
 	}
 
@@ -159,6 +147,14 @@ func (f *CardForm) ToRecord() *stores.CardRecord {
 	}
 }
 
+func (f *CardForm) Validate() []error {
+	vd := NewValidator()
+	vd.ValidateMinLength("Context", f.Context, 1)
+	vd.ValidateMinLength("Front", f.Front, 2)
+	vd.ValidateMinLength("Back", f.Back, 1)
+	return vd.Errors()
+}
+
 func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
@@ -188,6 +184,13 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 
+		if errs := card.Validate(); len(errs) != 0 {
+			return renderHTML(w, r, http.StatusOK, "cards/new", tplVars{
+				"Deck":       deck,
+				"Card":       card,
+				"CardErrors": errs,
+			})
+		}
 		record := card.ToRecord()
 		record.DeckId = deck.Id
 		log.Printf("Creating card: %q \n", record)

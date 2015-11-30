@@ -1,19 +1,23 @@
 <h2>New Card for {{.Deck.Name}}</h2>
 
+{{range .CardErrors}}
+<p class="text-danger">{{.}}</p>
+{{end}}
+
 <form method="post" action="/decks/{{.Deck.Id}}/cards/new" class="form form-vertical">
   <div class="form-group">
     <label>Context</label>
-    <input name="Context" class="form-control">
+    <input name="Context" class="form-control" value="{{.Card.Context}}">
   </div>
 
   <div class="form-group">
     <label>Front</label>
-    <textarea name="Front" class="form-control"></textarea>
+    <textarea name="Front" class="form-control">{{.Card.Front}}</textarea>
   </div>
 
   <div class="form-group">
     <label>Back</label>
-    <textarea name="Back" class="form-control"></textarea>
+    <textarea name="Back" class="form-control">{{.Card.Back}}</textarea>
   </div>
 
   <input type="submit" class="btn btn-default">
