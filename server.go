@@ -69,9 +69,30 @@ func (f *DeckForm) ToRecord() *stores.DeckRecord {
 	return &stores.DeckRecord{Name: f.Name}
 }
 
+func (f *DeckForm) Validate() error {
+	if err := validateLength("Name", f.Name, 0); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateLength(label, val string, length int) error {
+	if len(val) <= length {
+		if length <= 0 {
+			return fmt.Errorf("%s can't be blank", label)
+		} else {
+			return fmt.Errorf("%s must be at least %d characters long", label, length)
+		}
+	}
+	return nil
+}
+
 func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
-		return renderHTML(w, r, http.StatusOK, "decks/new", nil)
+		return renderHTML(w, r, http.StatusOK, "decks/new", tplVars{
+			"DeckForm":   new(DeckForm),
+			"DeckErrors": []error{},
+		})
 	}
 
 	if err := r.ParseForm(); err != nil {
@@ -81,6 +102,13 @@ func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	err := decoder.Decode(deck, r.PostForm)
 	if err != nil {
 		return err
+	}
+
+	if err := deck.Validate(); err != nil {
+		return renderHTML(w, r, http.StatusOK, "decks/new", tplVars{
+			"DeckForm":   deck,
+			"DeckErrors": []error{err},
+		})
 	}
 
 	record := deck.ToRecord()
