@@ -1,11 +1,10 @@
 <h2>Edit Card for {{.Deck.Name}}</h2>
 
-<p>CONTEXT: {{.Card.Context}}</p>
 {{range .CardErrors}}
 <p class="text-danger">{{.}}</p>
 {{end}}
 
-<form method="post" action="/decks/{{.Deck.ID}}/cards/new" class="form form-vertical">
+<form method="post" action="/cards/{{.Card.ID}}/edit" class="form form-vertical">
   <div class="form-group">
     <label>Context</label>
     <input name="Context" class="form-control" value="{{.Card.Context}}">

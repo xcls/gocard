@@ -84,12 +84,8 @@ func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
 		})
 	}
 
-	if err := r.ParseForm(); err != nil {
-		return err
-	}
 	deck := new(DeckForm)
-	err := decoder.Decode(deck, r.PostForm)
-	if err != nil {
+	if err := decodeForm(deck, r); err != nil {
 		return err
 	}
 
@@ -134,6 +130,7 @@ func ShowDeckHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 type CardForm struct {
+	ID      int64
 	Context string
 	Front   string
 	Back    string
@@ -141,6 +138,7 @@ type CardForm struct {
 
 func (f *CardForm) ToModel() *stores.Card {
 	return &stores.Card{
+		ID:      f.ID,
 		Context: f.Context,
 		Front:   f.Front,
 		Back:    f.Back,
@@ -149,6 +147,7 @@ func (f *CardForm) ToModel() *stores.Card {
 
 func (f *CardForm) FromModel(m *stores.Card) *CardForm {
 	*f = *&CardForm{
+		ID:      m.ID,
 		Context: m.Context,
 		Front:   m.Front,
 		Back:    m.Back,
@@ -185,10 +184,7 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 			"Card": card,
 		})
 	} else {
-		if err := r.ParseForm(); err != nil {
-			return err
-		}
-		err := decoder.Decode(card, r.PostForm)
+		err := decodeForm(card, r)
 		if err != nil {
 			return err
 		}
@@ -238,10 +234,7 @@ func EditCardHandler(w http.ResponseWriter, r *http.Request) error {
 			"Card": form,
 		})
 	} else {
-		if err := r.ParseForm(); err != nil {
-			return err
-		}
-		err := decoder.Decode(form, r.PostForm)
+		err := decodeForm(form, r)
 		if err != nil {
 			return err
 		}
@@ -255,12 +248,21 @@ func EditCardHandler(w http.ResponseWriter, r *http.Request) error {
 		}
 		card := form.ToModel()
 		card.DeckID = deck.ID
+
 		// TODO Update Card
+		addFlash(w, r, "Updated Card")
 		http.Redirect(w, r,
 			fmt.Sprintf("/decks/%d", card.DeckID),
 			http.StatusFound)
 	}
 	return nil
+}
+
+func decodeForm(form interface{}, r *http.Request) error {
+	if err := r.ParseForm(); err != nil {
+		return err
+	}
+	return decoder.Decode(form, r.PostForm)
 }
 
 func renderHTML(w http.ResponseWriter, r *http.Request, status int, tpl string, vars tplVars) error {
