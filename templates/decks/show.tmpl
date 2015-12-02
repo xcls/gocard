@@ -1,13 +1,17 @@
 <h2>Deck: {{.Deck.Name}}</h2>
 <p>
-<a href="/decks/{{.Deck.Id}}/cards/new" class="btn btn-default">Add Card</a>
+<a href="/decks/{{.Deck.ID}}/cards/new" class="btn btn-default">Add Card</a>
 </p>
 
 <table class="table">
   {{range .Cards}}
   <tr>
-    <td>{{.Id}}</td>
-    <td>{{.Context}}</td>
+    <td>{{.ID}}</td>
+    <td>
+      <a href="/cards/{{.ID}}/edit">
+      {{.Context}}
+      </a>
+    </td>
     <td>{{.}}</td>
   </tr>
   {{end}}

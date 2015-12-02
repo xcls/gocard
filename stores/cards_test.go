@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/mcls/gocard/dbutil"
+	"github.com/stretchr/testify/assert"
 )
 
 func resetDatabase(t *testing.T) {
@@ -16,30 +17,50 @@ func resetDatabase(t *testing.T) {
 	}
 }
 
-func TestCardRecord_Insert(t *testing.T) {
-	resetDatabase(t)
-	deck := &DeckRecord{Name: "Coding Knowledge"}
+func createDeck(t *testing.T, name string) *DeckRecord {
+	deck := &DeckRecord{Name: name}
 	if err := Store.Decks.Insert(deck); err != nil {
 		t.Fatal(err)
 	}
-	card := &CardRecord{
+	return deck
+}
+
+func TestCards_Insert(t *testing.T) {
+	resetDatabase(t)
+	deck := createDeck(t, "Coding Knowledge")
+	card := &Card{
 		Context: "Programming",
 		Front:   "Hello [...]",
 		Back:    "Hello World",
-		DeckId:  deck.Id,
+		DeckID:  deck.ID,
 	}
-	if err := Store.Cards.Insert(card); err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, Store.Cards.Insert(card))
 	cs, err := Store.Cards.All()
 	if err != nil {
 		t.Fatal(err)
 	}
 	lastCard := cs[0]
-	if lastCard.Id != card.Id {
-		t.Fatalf("Cards not equal. \n%d \n!= \n%d\n", card.Id, lastCard.Id)
+	assert.Equal(t, lastCard.ID, card.ID, "Card IDs don't match")
+	assert.Equal(t, lastCard.CreatedAt.Unix(), card.CreatedAt.Unix(),
+		"Card CreatedAt not equal")
+}
+
+func TestCards_Find(t *testing.T) {
+	resetDatabase(t)
+	deck := createDeck(t, "Coding Knowledge")
+	card := &Card{
+		Context: "Programming 2",
+		Front:   "Hello [...]",
+		Back:    "Hello World",
+		DeckID:  deck.ID,
 	}
-	if lastCard.CreatedAt.Unix() != card.CreatedAt.Unix() {
-		t.Fatalf("Cards not equal. \n%q \n!= \n%q\n", card.CreatedAt, lastCard.CreatedAt)
-	}
+	err := Store.Cards.Insert(card)
+	assert.NoError(t, err)
+
+	actual, err := Store.Cards.Find(card.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, actual.ID, card.ID,
+		"Card IDs not equal")
+	assert.Equal(t, actual.CreatedAt.Unix(), card.CreatedAt.Unix(),
+		"Card CreatedAt not equal")
 }

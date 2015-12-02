@@ -2,6 +2,7 @@ package stores
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/go-gorp/gorp"
@@ -23,13 +24,44 @@ type Cards struct{}
 type Decks struct{}
 
 type CardRecord struct {
-	Id        int64     `db:"id"`
+	ID        int64     `db:"id"`
 	Context   string    `db:"context"`
 	Front     string    `db:"front"`
 	Back      string    `db:"back"`
-	DeckId    int64     `db:"deck_id"`
+	DeckID    int64     `db:"deck_id"`
 	CreatedAt time.Time `db:"created_at"`
 	// UpdatedAt time.Time `db:"updated_at"`
+}
+
+func (r *CardRecord) ToModel() *Card {
+	return &Card{
+		ID:        r.ID,
+		Context:   r.Context,
+		Front:     r.Front,
+		Back:      r.Back,
+		DeckID:    r.DeckID,
+		CreatedAt: r.CreatedAt,
+	}
+}
+
+func (r *CardRecord) FromModel(m *Card) *CardRecord {
+	return &CardRecord{
+		ID:        m.ID,
+		Context:   m.Context,
+		Front:     m.Front,
+		Back:      m.Back,
+		DeckID:    m.DeckID,
+		CreatedAt: m.CreatedAt,
+	}
+}
+
+type Card struct {
+	ID        int64
+	Context   string
+	Front     string
+	Back      string
+	DeckID    int64
+	CreatedAt time.Time
 }
 
 // implement the PreInsert and PreUpdate hooks
@@ -39,7 +71,7 @@ func (c *CardRecord) PreInsert(s gorp.SqlExecutor) error {
 }
 
 type DeckRecord struct {
-	Id        int64     `db:"id"`
+	ID        int64     `db:"id"`
 	Name      string    `db:"name"`
 	CreatedAt time.Time `db:"created_at"`
 	// UpdatedAt time.Time `db:"updated_at"`
@@ -50,8 +82,15 @@ func (r *DeckRecord) PreInsert(s gorp.SqlExecutor) error {
 	return nil
 }
 
-func (s *Cards) Insert(card *CardRecord) error {
-	return dbmap.Insert(card)
+func (s *Cards) Insert(model *Card) error {
+	record := new(CardRecord).FromModel(model)
+	err := dbmap.Insert(record)
+	if err != nil {
+		return err
+	}
+	// Update original model with values from db
+	*model = *record.ToModel()
+	return nil
 }
 
 func (s *Cards) All() ([]*CardRecord, error) {
@@ -60,7 +99,7 @@ func (s *Cards) All() ([]*CardRecord, error) {
 	return cards, err
 }
 
-func (s *Cards) AllByDeckId(id int) ([]*CardRecord, error) {
+func (s *Cards) AllByDeckID(id int) ([]*CardRecord, error) {
 	var cards []*CardRecord
 	_, err := dbmap.Select(
 		&cards,
@@ -70,18 +109,26 @@ func (s *Cards) AllByDeckId(id int) ([]*CardRecord, error) {
 	return cards, err
 }
 
+func (s *Cards) Find(id int64) (*Card, error) {
+	var record *CardRecord
+	err := dbmap.SelectOne(&record, "SELECT * FROM cards WHERE id = $1", id)
+	if err != nil {
+		return nil, err
+	}
+	return record.ToModel(), nil
+}
+
 func (s *Decks) Insert(deck *DeckRecord) error {
 	return dbmap.Insert(deck)
 }
 
-func (s *Decks) Find(id int) (*DeckRecord, error) {
+func (s *Decks) Find(id int64) (*DeckRecord, error) {
 	var deck *DeckRecord
 	err := dbmap.SelectOne(&deck, "SELECT * FROM decks WHERE id = $1", id)
 	if err != nil {
 		return nil, err
-	} else {
-		return deck, nil
 	}
+	return deck, nil
 }
 
 func (s *Decks) All() ([]*DeckRecord, error) {
@@ -101,6 +148,7 @@ func initDb() *gorp.DbMap {
 
 	// construct a gorp DbMap
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
+	dbmap.TraceOn("SQL", log.New(os.Stdout, "", log.Ltime|log.Lshortfile))
 	dbmap.AddTableWithName(CardRecord{}, "cards").SetKeys(true, "id")
 	dbmap.AddTableWithName(DeckRecord{}, "decks").SetKeys(true, "id")
 

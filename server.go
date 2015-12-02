@@ -33,6 +33,7 @@ func startServer() {
 	r.HandleFunc("/decks/new", errorHandler(NewDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}", errorHandler(ShowDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", errorHandler(NewCardHandler))
+	r.HandleFunc("/cards/{id:[0-9]+}/edit", errorHandler(EditCardHandler))
 
 	port := ":8080"
 	log.Printf("Starting server on %q\n", port)
@@ -71,7 +72,7 @@ func (f *DeckForm) ToRecord() *stores.DeckRecord {
 
 func (f *DeckForm) Validate() []error {
 	vd := NewValidator()
-	vd.ValidateMinLength("Name", f.Name, 0)
+	vd.ValidateMinLength("Name", f.Name, 1)
 	return vd.Errors()
 }
 
@@ -107,7 +108,7 @@ func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	http.Redirect(w, r,
-		fmt.Sprintf("/decks/%d", record.Id),
+		fmt.Sprintf("/decks/%d", record.ID),
 		http.StatusFound)
 	return nil
 }
@@ -118,11 +119,11 @@ func ShowDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	deck, err := stores.Store.Decks.Find(id)
+	deck, err := stores.Store.Decks.Find(int64(id))
 	if err != nil {
 		return err
 	}
-	cards, err := stores.Store.Cards.AllByDeckId(id)
+	cards, err := stores.Store.Cards.AllByDeckID(id)
 	if err != nil {
 		return err
 	}
@@ -138,13 +139,21 @@ type CardForm struct {
 	Back    string
 }
 
-func (f *CardForm) ToRecord() *stores.CardRecord {
-	fmt.Println(f.Context)
-	return &stores.CardRecord{
+func (f *CardForm) ToModel() *stores.Card {
+	return &stores.Card{
 		Context: f.Context,
 		Front:   f.Front,
 		Back:    f.Back,
 	}
+}
+
+func (f *CardForm) FromModel(m *stores.Card) *CardForm {
+	*f = *&CardForm{
+		Context: m.Context,
+		Front:   m.Front,
+		Back:    m.Back,
+	}
+	return f
 }
 
 func (f *CardForm) Validate() []error {
@@ -161,7 +170,7 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	deck, err := stores.Store.Decks.Find(id)
+	deck, err := stores.Store.Decks.Find(int64(id))
 	if err != nil {
 		return err
 	}
@@ -191,17 +200,64 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 				"CardErrors": errs,
 			})
 		}
-		record := card.ToRecord()
-		record.DeckId = deck.Id
-		log.Printf("Creating card: %q \n", record)
-		if err := stores.Store.Cards.Insert(record); err != nil {
+		model := card.ToModel()
+		model.DeckID = deck.ID
+		log.Printf("Creating card: %+v \n", model)
+		if err := stores.Store.Cards.Insert(model); err != nil {
 			return err
 		}
-		if err := addFlash(w, r, "Saved Card: "+record.Context); err != nil {
+		if err := addFlash(w, r, "Saved Card: "+model.Context); err != nil {
 			return err
 		}
 		http.Redirect(w, r,
-			fmt.Sprintf("/decks/%d", record.DeckId),
+			fmt.Sprintf("/decks/%d", model.DeckID),
+			http.StatusFound)
+	}
+	return nil
+}
+
+func EditCardHandler(w http.ResponseWriter, r *http.Request) error {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return err
+	}
+	card, err := stores.Store.Cards.Find(int64(id))
+	if err != nil {
+		return err
+	}
+	deck, err := stores.Store.Decks.Find(int64(card.DeckID))
+	if err != nil {
+		return err
+	}
+
+	form := new(CardForm).FromModel(card)
+	if r.Method == "GET" {
+		return renderHTML(w, r, http.StatusOK, "cards/edit", tplVars{
+			"Deck": deck,
+			"Card": form,
+		})
+	} else {
+		if err := r.ParseForm(); err != nil {
+			return err
+		}
+		err := decoder.Decode(form, r.PostForm)
+		if err != nil {
+			return err
+		}
+
+		if errs := form.Validate(); len(errs) != 0 {
+			return renderHTML(w, r, http.StatusOK, "cards/edit", tplVars{
+				"Deck":       deck,
+				"Card":       form,
+				"CardErrors": errs,
+			})
+		}
+		card := form.ToModel()
+		card.DeckID = deck.ID
+		// TODO Update Card
+		http.Redirect(w, r,
+			fmt.Sprintf("/decks/%d", card.DeckID),
 			http.StatusFound)
 	}
 	return nil

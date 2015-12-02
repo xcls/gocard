@@ -9,11 +9,13 @@ default: test build
 test:
 	$(GO) test ./...
 
-build:
-	$(GO) build
+build: install
 
 install:
-	$(GO) install ./...
+	$(GO) install -v ./...
+
+server: install
+	gocard server
 
 autotest:
 	$(WATCH_GO) | xargs -n1 -I{} $(MAKE) test
@@ -22,10 +24,7 @@ autobuild:
 	$(WATCH_GO) | xargs -n1 -I{} $(MAKE) build
 
 compile_daemon:
-	CompileDaemon -exclude-dir=.git -command="./gocard server" -color -pattern "(.+\\.go|.+\\.c|.+\\.tmpl)$$"
+	CompileDaemon -exclude-dir=.git -command="gocard server" -color -pattern "(.+\\.go|.+\\.c|.+\\.tmpl)$$"
 
 install_daemon:
 	$(GO) get github.com/githubnemo/CompileDaemon
-
-server: build
-	@./gocard

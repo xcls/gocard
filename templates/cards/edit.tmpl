@@ -1,5 +1,6 @@
-<h2>New Card for {{.Deck.Name}}</h2>
+<h2>Edit Card for {{.Deck.Name}}</h2>
 
+<p>CONTEXT: {{.Card.Context}}</p>
 {{range .CardErrors}}
 <p class="text-danger">{{.}}</p>
 {{end}}
