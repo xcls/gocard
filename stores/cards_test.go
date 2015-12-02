@@ -64,3 +64,24 @@ func TestCards_Find(t *testing.T) {
 	assert.Equal(t, actual.CreatedAt.Unix(), card.CreatedAt.Unix(),
 		"Card CreatedAt not equal")
 }
+
+func TestCards_Update(t *testing.T) {
+	resetDatabase(t)
+	var err error
+	deck := createDeck(t, "Coding Knowledge")
+	card := &Card{
+		Context: "Programming 2",
+		Front:   "Hello [...]",
+		Back:    "Hello World",
+		DeckID:  deck.ID,
+	}
+	err = Store.Cards.Insert(card)
+	assert.NoError(t, err)
+
+	card.Context = "Hacking 101"
+	err = Store.Cards.Update(card)
+	assert.NoError(t, err)
+
+	actual, err := Store.Cards.Find(card.ID)
+	assert.Equal(t, actual.Context, "Hacking 101")
+}

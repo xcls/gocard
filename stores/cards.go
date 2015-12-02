@@ -93,6 +93,17 @@ func (s *Cards) Insert(model *Card) error {
 	return nil
 }
 
+func (s *Cards) Update(model *Card) error {
+	record := new(CardRecord).FromModel(model)
+	_, err := dbmap.Update(record)
+	if err != nil {
+		return err
+	}
+	// Update original model with values from db
+	*model = *record.ToModel()
+	return nil
+}
+
 func (s *Cards) All() ([]*CardRecord, error) {
 	var cards []*CardRecord
 	_, err := dbmap.Select(&cards, "SELECT * FROM cards ORDER BY created_at DESC")

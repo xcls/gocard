@@ -227,13 +227,15 @@ func EditCardHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	form := new(CardForm).FromModel(card)
+	form := new(CardForm)
 	if r.Method == "GET" {
+		form.FromModel(card)
 		return renderHTML(w, r, http.StatusOK, "cards/edit", tplVars{
 			"Deck": deck,
 			"Card": form,
 		})
 	} else {
+		form.ID = card.ID
 		err := decodeForm(form, r)
 		if err != nil {
 			return err
@@ -249,7 +251,9 @@ func EditCardHandler(w http.ResponseWriter, r *http.Request) error {
 		card := form.ToModel()
 		card.DeckID = deck.ID
 
-		// TODO Update Card
+		if err := stores.Store.Cards.Update(card); err != nil {
+			return err
+		}
 		addFlash(w, r, "Updated Card")
 		http.Redirect(w, r,
 			fmt.Sprintf("/decks/%d", card.DeckID),
