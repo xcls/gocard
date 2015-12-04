@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"fmt"
@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/mcls/gocard/config"
 	"github.com/mcls/gocard/stores"
+	"github.com/mcls/gocard/valid"
 	"github.com/unrolled/render"
 )
 
@@ -25,7 +26,7 @@ var jar = sessions.NewCookieStore([]byte(config.CookieSecret()))
 
 type tplVars map[string]interface{}
 
-func startServer() {
+func StartServer() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", errorHandler(indexHandler))
@@ -71,7 +72,7 @@ func (f *DeckForm) ToRecord() *stores.DeckRecord {
 }
 
 func (f *DeckForm) Validate() []error {
-	vd := NewValidator()
+	vd := valid.NewValidator()
 	vd.ValidateMinLength("Name", f.Name, 1)
 	return vd.Errors()
 }
@@ -156,7 +157,7 @@ func (f *CardForm) FromModel(m *stores.Card) *CardForm {
 }
 
 func (f *CardForm) Validate() []error {
-	vd := NewValidator()
+	vd := valid.NewValidator()
 	vd.ValidateMinLength("Context", f.Context, 1)
 	vd.ValidateMinLength("Front", f.Front, 2)
 	vd.ValidateMinLength("Back", f.Back, 1)
