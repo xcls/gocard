@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/mcls/gocard/stores"
 	"github.com/mcls/gocard/valid"
-	"github.com/sqs/mux"
 )
 
 type DeckForm struct {
