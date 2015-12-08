@@ -1,7 +1,6 @@
 package app
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/codegangsta/negroni"
@@ -21,6 +20,7 @@ var renderer = render.New(render.Options{
 })
 
 var jar = sessions.NewCookieStore([]byte(config.CookieSecret()))
+var applog = config.DefaultLogger()
 
 type tplVars map[string]interface{}
 
@@ -34,13 +34,16 @@ func StartServer() {
 	r.HandleFunc("/cards/{id:[0-9]+}/edit", errorHandler(EditCardHandler))
 
 	// Middleware
-	httpLogger := &negroni.Logger{config.DefaultLogger()}
-	n := negroni.New(negroni.NewRecovery(), httpLogger)
-	n.UseHandler(r)
+	httpLogger := &negroni.Logger{applog}
+	n := negroni.New(
+		negroni.NewRecovery(),
+		httpLogger,
+		negroni.Wrap(r),
+	)
 
 	port := ":8080"
-	log.Printf("Starting server on %q\n", port)
-	log.Fatal(http.ListenAndServe(port, n))
+	applog.Printf("Starting server on %q\n", port)
+	applog.Fatal(http.ListenAndServe(port, n))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) error {
@@ -59,7 +62,8 @@ func errorHandler(f func(w http.ResponseWriter, r *http.Request) error) http.Han
 		err := f(w, r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Printf("handling %q: %v \n", r.RequestURI, err)
+			applog.Printf("Internal Server Error on %q \n", r.RequestURI)
+			applog.Printf("Error: %v \n", err)
 		}
 	}
 }

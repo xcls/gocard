@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -80,7 +79,7 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 		}
 		model := card.ToModel()
 		model.DeckID = deck.ID
-		log.Printf("Creating card: %+v \n", model)
+		applog.Printf("Creating card: %+v \n", model)
 		if err := stores.Store.Cards.Insert(model); err != nil {
 			return err
 		}
