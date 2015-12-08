@@ -25,7 +25,7 @@ var ServerCmd = &cobra.Command{
 	},
 }
 
-var MigrationCmd = nomad.NewMigrationCmd(migrations.Migrations, "./migrations")
+var MigrationCmd = nomad.NewMigrationCmd(migrations.NewRunner(), "./migrations")
 
 func main() {
 	GocardCmd.AddCommand(ServerCmd)

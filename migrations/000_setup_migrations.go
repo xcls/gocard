@@ -1,12 +1,11 @@
 package migrations
 
 import (
-	"database/sql"
 	"log"
 
-	"github.com/mcls/gocard/config"
+	"github.com/mcls/gocard/dbutil"
 	"github.com/mcls/nomad"
-	"github.com/mcls/nomad/pg"
+	nomadpg "github.com/mcls/nomad/pg"
 	// Setup postgres driver
 	_ "github.com/lib/pq"
 )
@@ -14,9 +13,13 @@ import (
 var Migrations *nomad.List
 
 func init() {
-	db, err := sql.Open("postgres", config.DatabaseUrl())
+	Migrations = nomad.NewList()
+}
+
+func NewRunner() *nomad.Runner {
+	db, err := dbutil.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
-	Migrations = pg.NewList(db)
+	return nomadpg.NewRunner(db, Migrations)
 }

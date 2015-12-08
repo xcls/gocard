@@ -3,13 +3,20 @@ package stores
 import (
 	"testing"
 
+	"github.com/mcls/gocard/config"
 	"github.com/mcls/gocard/dbutil"
+	"github.com/mcls/gocard/migrations"
+	nomadpg "github.com/mcls/nomad/pg"
 	"github.com/stretchr/testify/assert"
 )
 
 func resetDatabase(t *testing.T) {
-	db, err := dbutil.Connect()
+	db, err := dbutil.Connect(config.DatabaseTestURL())
 	if err != nil {
+		t.Fatal(err)
+	}
+	runner := nomadpg.NewRunner(db, migrations.Migrations)
+	if err := runner.Run(); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := db.Exec("DELETE FROM cards;"); err != nil {
