@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/mcls/gocard/stores"
+	"github.com/mcls/gocard/stores/common"
 	"github.com/mcls/gocard/valid"
 )
 
@@ -13,8 +14,8 @@ type DeckForm struct {
 	Name string
 }
 
-func (f *DeckForm) ToRecord() *stores.DeckRecord {
-	return &stores.DeckRecord{Name: f.Name}
+func (f *DeckForm) ToRecord() *common.Deck {
+	return &common.Deck{Name: f.Name}
 }
 
 func (f *DeckForm) Validate() []error {

@@ -6,9 +6,13 @@ import (
 	"github.com/mcls/gocard/config"
 	"github.com/mcls/gocard/dbutil"
 	"github.com/mcls/gocard/migrations"
+	"github.com/mcls/gocard/stores/common"
+	"github.com/mcls/gocard/stores/psql"
 	nomadpg "github.com/mcls/nomad/pg"
 	"github.com/stretchr/testify/assert"
 )
+
+var store *common.Store
 
 func resetDatabase(t *testing.T) {
 	db, err := dbutil.Connect(config.DatabaseTestURL())
@@ -22,11 +26,12 @@ func resetDatabase(t *testing.T) {
 	if _, err := db.Exec("DELETE FROM cards;"); err != nil {
 		t.Fatal(err)
 	}
+	store = psql.NewStore(db)
 }
 
-func createDeck(t *testing.T, name string) *DeckRecord {
-	deck := &DeckRecord{Name: name}
-	if err := Store.Decks.Insert(deck); err != nil {
+func createDeck(t *testing.T, name string) *common.Deck {
+	deck := &common.Deck{Name: name}
+	if err := store.Decks.Insert(deck); err != nil {
 		t.Fatal(err)
 	}
 	return deck
@@ -35,14 +40,14 @@ func createDeck(t *testing.T, name string) *DeckRecord {
 func TestCards_Insert(t *testing.T) {
 	resetDatabase(t)
 	deck := createDeck(t, "Coding Knowledge")
-	card := &Card{
+	card := &common.Card{
 		Context: "Programming",
 		Front:   "Hello [...]",
 		Back:    "Hello World",
 		DeckID:  deck.ID,
 	}
-	assert.NoError(t, Store.Cards.Insert(card))
-	cs, err := Store.Cards.All()
+	assert.NoError(t, store.Cards.Insert(card))
+	cs, err := store.Cards.All()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,16 +60,16 @@ func TestCards_Insert(t *testing.T) {
 func TestCards_Find(t *testing.T) {
 	resetDatabase(t)
 	deck := createDeck(t, "Coding Knowledge")
-	card := &Card{
+	card := &common.Card{
 		Context: "Programming 2",
 		Front:   "Hello [...]",
 		Back:    "Hello World",
 		DeckID:  deck.ID,
 	}
-	err := Store.Cards.Insert(card)
+	err := store.Cards.Insert(card)
 	assert.NoError(t, err)
 
-	actual, err := Store.Cards.Find(card.ID)
+	actual, err := store.Cards.Find(card.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, actual.ID, card.ID,
 		"Card IDs not equal")
@@ -76,19 +81,19 @@ func TestCards_Update(t *testing.T) {
 	resetDatabase(t)
 	var err error
 	deck := createDeck(t, "Coding Knowledge")
-	card := &Card{
+	card := &common.Card{
 		Context: "Programming 2",
 		Front:   "Hello [...]",
 		Back:    "Hello World",
 		DeckID:  deck.ID,
 	}
-	err = Store.Cards.Insert(card)
+	err = store.Cards.Insert(card)
 	assert.NoError(t, err)
 
 	card.Context = "Hacking 101"
-	err = Store.Cards.Update(card)
+	err = store.Cards.Update(card)
 	assert.NoError(t, err)
 
-	actual, err := Store.Cards.Find(card.ID)
+	actual, err := store.Cards.Find(card.ID)
 	assert.Equal(t, actual.Context, "Hacking 101")
 }

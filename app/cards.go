@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/mcls/gocard/stores"
+	"github.com/mcls/gocard/stores/common"
 	"github.com/mcls/gocard/valid"
 )
 
@@ -16,8 +17,8 @@ type CardForm struct {
 	Back    string
 }
 
-func (f *CardForm) ToModel() *stores.Card {
-	return &stores.Card{
+func (f *CardForm) ToModel() *common.Card {
+	return &common.Card{
 		ID:      f.ID,
 		Context: f.Context,
 		Front:   f.Front,
@@ -25,7 +26,7 @@ func (f *CardForm) ToModel() *stores.Card {
 	}
 }
 
-func (f *CardForm) FromModel(m *stores.Card) *CardForm {
+func (f *CardForm) FromModel(m *common.Card) *CardForm {
 	*f = *&CardForm{
 		ID:      m.ID,
 		Context: m.Context,
