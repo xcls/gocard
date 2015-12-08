@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/mcls/gocard/stores"
 	"github.com/mcls/gocard/valid"
 )
@@ -24,21 +23,21 @@ func (f *DeckForm) Validate() []error {
 	return vd.Errors()
 }
 
-func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
-	if r.Method == "GET" {
-		return renderHTML(w, r, http.StatusOK, "decks/new", tplVars{
+func NewDeckHandler(rc *RequestContext) error {
+	if rc.Request.Method == "GET" {
+		return rc.HTML(http.StatusOK, "decks/new", tplVars{
 			"DeckForm":   new(DeckForm),
 			"DeckErrors": []error{},
 		})
 	}
 
 	deck := new(DeckForm)
-	if err := decodeForm(deck, r); err != nil {
+	if err := decodeForm(deck, rc.Request); err != nil {
 		return err
 	}
 
 	if errs := deck.Validate(); len(errs) != 0 {
-		return renderHTML(w, r, http.StatusOK, "decks/new", tplVars{
+		return rc.HTML(http.StatusOK, "decks/new", tplVars{
 			"DeckForm":   deck,
 			"DeckErrors": errs,
 		})
@@ -48,18 +47,17 @@ func NewDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	if err := stores.Store.Decks.Insert(record); err != nil {
 		return err
 	}
-	if err := addFlash(w, r, "Saved Deck: "+record.Name); err != nil {
+	if err := rc.AddFlash("Saved Deck: " + record.Name); err != nil {
 		return err
 	}
-	http.Redirect(w, r,
+	http.Redirect(rc.Writer, rc.Request,
 		fmt.Sprintf("/decks/%d", record.ID),
 		http.StatusFound)
 	return nil
 }
 
-func ShowDeckHandler(w http.ResponseWriter, r *http.Request) error {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func ShowDeckHandler(rc *RequestContext) error {
+	id, err := strconv.Atoi(rc.Vars()["id"])
 	if err != nil {
 		return err
 	}
@@ -71,7 +69,7 @@ func ShowDeckHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	return renderHTML(w, r, http.StatusOK, "decks/show", tplVars{
+	return rc.HTML(http.StatusOK, "decks/show", tplVars{
 		"Deck":  deck,
 		"Cards": cards,
 	})

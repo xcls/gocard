@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/mcls/gocard/stores"
 	"github.com/mcls/gocard/valid"
 )
@@ -44,9 +43,8 @@ func (f *CardForm) Validate() []error {
 	return vd.Errors()
 }
 
-func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func NewCardHandler(rc *RequestContext) error {
+	id, err := strconv.Atoi(rc.Vars()["id"])
 	if err != nil {
 		return err
 	}
@@ -59,19 +57,19 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	card := new(CardForm)
-	if r.Method == "GET" {
-		return renderHTML(w, r, http.StatusOK, "cards/new", tplVars{
+	if rc.Request.Method == "GET" {
+		return rc.HTML(http.StatusOK, "cards/new", tplVars{
 			"Deck": deck,
 			"Card": card,
 		})
 	} else {
-		err := decodeForm(card, r)
+		err := decodeForm(card, rc.Request)
 		if err != nil {
 			return err
 		}
 
 		if errs := card.Validate(); len(errs) != 0 {
-			return renderHTML(w, r, http.StatusOK, "cards/new", tplVars{
+			return rc.HTML(http.StatusOK, "cards/new", tplVars{
 				"Deck":       deck,
 				"Card":       card,
 				"CardErrors": errs,
@@ -83,19 +81,18 @@ func NewCardHandler(w http.ResponseWriter, r *http.Request) error {
 		if err := stores.Store.Cards.Insert(model); err != nil {
 			return err
 		}
-		if err := addFlash(w, r, "Saved Card: "+model.Context); err != nil {
+		if err := rc.AddFlash("Saved Card: " + model.Context); err != nil {
 			return err
 		}
-		http.Redirect(w, r,
+		http.Redirect(rc.Writer, rc.Request,
 			fmt.Sprintf("/decks/%d", model.DeckID),
 			http.StatusFound)
 	}
 	return nil
 }
 
-func EditCardHandler(w http.ResponseWriter, r *http.Request) error {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func EditCardHandler(rc *RequestContext) error {
+	id, err := strconv.Atoi(rc.Vars()["id"])
 	if err != nil {
 		return err
 	}
@@ -109,21 +106,21 @@ func EditCardHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	form := new(CardForm)
-	if r.Method == "GET" {
+	if rc.Request.Method == "GET" {
 		form.FromModel(card)
-		return renderHTML(w, r, http.StatusOK, "cards/edit", tplVars{
+		return rc.HTML(http.StatusOK, "cards/edit", tplVars{
 			"Deck": deck,
 			"Card": form,
 		})
 	} else {
 		form.ID = card.ID
-		err := decodeForm(form, r)
+		err := decodeForm(form, rc.Request)
 		if err != nil {
 			return err
 		}
 
 		if errs := form.Validate(); len(errs) != 0 {
-			return renderHTML(w, r, http.StatusOK, "cards/edit", tplVars{
+			return rc.HTML(http.StatusOK, "cards/edit", tplVars{
 				"Deck":       deck,
 				"Card":       form,
 				"CardErrors": errs,
@@ -135,8 +132,10 @@ func EditCardHandler(w http.ResponseWriter, r *http.Request) error {
 		if err := stores.Store.Cards.Update(card); err != nil {
 			return err
 		}
-		addFlash(w, r, "Updated Card")
-		http.Redirect(w, r,
+		if err := rc.AddFlash("Updated Card"); err != nil {
+			return err
+		}
+		http.Redirect(rc.Writer, rc.Request,
 			fmt.Sprintf("/decks/%d", card.DeckID),
 			http.StatusFound)
 	}

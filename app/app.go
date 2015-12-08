@@ -22,16 +22,14 @@ var renderer = render.New(render.Options{
 var jar = sessions.NewCookieStore([]byte(config.CookieSecret()))
 var applog = config.DefaultLogger()
 
-type tplVars map[string]interface{}
-
 func StartServer() {
 	// Routes
 	r := mux.NewRouter()
-	r.HandleFunc("/", errorHandler(indexHandler))
-	r.HandleFunc("/decks/new", errorHandler(NewDeckHandler))
-	r.HandleFunc("/decks/{id:[0-9]+}", errorHandler(ShowDeckHandler))
-	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", errorHandler(NewCardHandler))
-	r.HandleFunc("/cards/{id:[0-9]+}/edit", errorHandler(EditCardHandler))
+	r.HandleFunc("/", withContext(indexHandler))
+	r.HandleFunc("/decks/new", withContext(NewDeckHandler))
+	r.HandleFunc("/decks/{id:[0-9]+}", withContext(ShowDeckHandler))
+	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", withContext(NewCardHandler))
+	r.HandleFunc("/cards/{id:[0-9]+}/edit", withContext(EditCardHandler))
 
 	// Middleware
 	httpLogger := &negroni.Logger{applog}
@@ -46,14 +44,23 @@ func StartServer() {
 	applog.Fatal(http.ListenAndServe(port, n))
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) error {
+func withContext(f func(*RequestContext) error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		rc := &RequestContext{Writer: w, Request: r}
+		if err := f(rc); err != nil {
+			rc.RenderInternalServerErrorHTML(err)
+			applog.Printf("Internal Server Error on %q \n", r.RequestURI)
+			applog.Printf("Error: %v \n", err)
+		}
+	}
+}
+
+func indexHandler(rc *RequestContext) error {
 	decks, err := stores.Store.Decks.All()
 	if err != nil {
 		return err
 	}
-	renderHTML(w, r, http.StatusOK, "home", tplVars{
-		"decks": decks,
-	})
+	rc.HTML(http.StatusOK, "home", tplVars{"decks": decks})
 	return nil
 }
 
