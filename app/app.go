@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/codegangsta/negroni"
 	"github.com/gorilla/Schema"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -24,19 +25,22 @@ var jar = sessions.NewCookieStore([]byte(config.CookieSecret()))
 type tplVars map[string]interface{}
 
 func StartServer() {
+	// Routes
 	r := mux.NewRouter()
-
 	r.HandleFunc("/", errorHandler(indexHandler))
-
 	r.HandleFunc("/decks/new", errorHandler(NewDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}", errorHandler(ShowDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", errorHandler(NewCardHandler))
 	r.HandleFunc("/cards/{id:[0-9]+}/edit", errorHandler(EditCardHandler))
 
+	// Middleware
+	httpLogger := &negroni.Logger{config.DefaultLogger()}
+	n := negroni.New(negroni.NewRecovery(), httpLogger)
+	n.UseHandler(r)
+
 	port := ":8080"
 	log.Printf("Starting server on %q\n", port)
-	http.Handle("/", r)
-	log.Fatal(http.ListenAndServe(port, nil))
+	log.Fatal(http.ListenAndServe(port, n))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) error {

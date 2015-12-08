@@ -2,10 +2,10 @@ package stores
 
 import (
 	"log"
-	"os"
 	"time"
 
 	"github.com/go-gorp/gorp"
+	"github.com/mcls/gocard/config"
 	"github.com/mcls/gocard/dbutil"
 )
 
@@ -159,7 +159,7 @@ func initDb() *gorp.DbMap {
 
 	// construct a gorp DbMap
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
-	dbmap.TraceOn("SQL", log.New(os.Stdout, "", log.Ltime|log.Lshortfile))
+	dbmap.TraceOn("(SQL)", config.DefaultLogger())
 	dbmap.AddTableWithName(CardRecord{}, "cards").SetKeys(true, "id")
 	dbmap.AddTableWithName(DeckRecord{}, "decks").SetKeys(true, "id")
 
