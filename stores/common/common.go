@@ -2,6 +2,12 @@ package common
 
 import (
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
+)
+
+const (
+	UserPasswordCost = 11
 )
 
 type Store struct {
@@ -32,6 +38,23 @@ type User struct {
 	EncryptedPassword string `json:"-"`
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+}
+
+func (m *User) SetPassword(pass string) error {
+	encrypted, err := bcrypt.GenerateFromPassword([]byte(pass), UserPasswordCost)
+	if err != nil {
+		return err
+	}
+	m.EncryptedPassword = string(encrypted)
+	return nil
+}
+
+// ComparePassword returns nil if equal, error if not
+func (m *User) ComparePassword(password string) error {
+	return bcrypt.CompareHashAndPassword(
+		[]byte(m.EncryptedPassword),
+		[]byte(password),
+	)
 }
 
 type CardStore interface {

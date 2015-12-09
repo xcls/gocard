@@ -1,7 +1,6 @@
 package psql
 
 import (
-	"errors"
 	"time"
 
 	"github.com/mcls/gocard/stores/common"
@@ -58,5 +57,17 @@ func (s *Users) Find(id int64) (*common.User, error) {
 }
 
 func (s *Users) Authenticate(email, password string) (*common.User, error) {
-	return nil, errors.New("BOOM!")
+	var record *UserRecord
+	err := s.DbMap.SelectOne(
+		&record, "SELECT * FROM users WHERE email = $1", email,
+	)
+	if err != nil {
+		return nil, err
+	}
+	model := record.ToModel()
+	err = model.ComparePassword(password)
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
 }

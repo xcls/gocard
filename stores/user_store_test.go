@@ -32,7 +32,6 @@ func TestUserStoreInsert(t *testing.T) {
 		if found.ID != user.ID {
 			t.Fatalf("IDs not equal: %v != %v", found.ID, user.ID)
 		}
-
 	}
 }
 
@@ -54,6 +53,32 @@ func TestUserStoreInsert_CantDuplicateEmail(t *testing.T) {
 		err = store.Users.Insert(u2)
 		if err == nil {
 			t.Fatalf("Expected error but got nil", err)
+		}
+	}
+}
+
+func TestUserStoreAuthenticate(t *testing.T) {
+	for _ = range setupUserStores(t) {
+		user := &common.User{Email: "maartencls@gmail.com"}
+		err := user.SetPassword("secret")
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = store.Users.Insert(user)
+		if err != nil {
+			t.Fatal(err)
+		}
+		found, err := store.Users.Authenticate("maartencls@gmail.com", "secret")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if found.ID != user.ID {
+			t.Fatalf("IDs not equal: %v != %v", found.ID, user.ID)
+		}
+
+		_, err = store.Users.Authenticate("maartencls@gmail.com", "secret123")
+		if err == nil {
+			t.Fatal("Expected error because passwords don't match")
 		}
 	}
 }
