@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/mcls/gocard/stores/common"
@@ -20,12 +21,16 @@ func (f *NewUserForm) ToModel() *common.User {
 	return user
 }
 
-func (f *NewUserForm) Validate() []error {
+func (f *NewUserForm) Validate(users common.UserStore) []error {
 	vd := valid.NewValidator()
 	vd.ValidateMinLength("Email", f.Email, 4)
 	vd.ValidateMinLength("Password", f.Password, 6)
 	vd.ValidateMinLength("Password Confirmation", f.PasswordConfirmation, 6)
 	vd.ValidateConfirmation("Password", f.Password, f.PasswordConfirmation)
+	u, err := users.FindByEmail(f.Email)
+	if err == nil || u != nil {
+		vd.AddError(errors.New("User with that email already exists"))
+	}
 	return vd.Errors()
 }
 
@@ -36,7 +41,7 @@ func RegisterHandler(rc *RequestContext) error {
 	}
 
 	decodeForm(form, rc.Request)
-	formErrors := form.Validate()
+	formErrors := form.Validate(rc.Store.Users)
 	if len(formErrors) > 0 {
 		return rc.HTML(http.StatusOK, "users/register", tplVars{
 			"User":       form,
