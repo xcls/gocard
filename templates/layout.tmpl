@@ -18,13 +18,20 @@
             <li>
               <a href="/">{{.CurrentUser.Email}}</a>
             </li>
-            {{end}}
             <li>
               <a href="/decks/new">New deck</a>
             </li>
             <li>
+              <a href="/logout">Log out</a>
+            </li>
+            {{else}}
+            <li>
               <a href="/register">Register</a>
             </li>
+            <li>
+              <a href="/login">Login</a>
+            </li>
+            {{end}}
           </ul>
         </div>
       </div>

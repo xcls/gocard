@@ -101,3 +101,19 @@ func LoginHandler(rc *RequestContext) error {
 	http.Redirect(rc.Writer, rc.Request, "/", http.StatusFound)
 	return nil
 }
+
+func LogoutHandler(rc *RequestContext) error {
+	session, err := jar.Get(rc.Request, "uid")
+	if err != nil {
+		return err
+	}
+	delete(session.Values, "uid")
+	if err := session.Save(rc.Request, rc.Writer); err != nil {
+		return err
+	}
+	if err := rc.AddFlash("Logged out"); err != nil {
+		return err
+	}
+	http.Redirect(rc.Writer, rc.Request, "/", http.StatusFound)
+	return nil
+}

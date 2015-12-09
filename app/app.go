@@ -27,6 +27,7 @@ func StartServer() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", withContext(indexHandler))
 	r.HandleFunc("/login", withContext(LoginHandler))
+	r.HandleFunc("/logout", withContext(LogoutHandler))
 	r.HandleFunc("/register", withContext(RegisterHandler))
 	r.HandleFunc("/decks/new", withContext(NewDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}", withContext(ShowDeckHandler))
