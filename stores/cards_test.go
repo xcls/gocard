@@ -3,29 +3,17 @@ package stores
 import (
 	"testing"
 
-	"github.com/mcls/gocard/config"
-	"github.com/mcls/gocard/dbutil"
-	"github.com/mcls/gocard/migrations"
 	"github.com/mcls/gocard/stores/common"
 	"github.com/mcls/gocard/stores/psql"
-	nomadpg "github.com/mcls/nomad/pg"
+	"github.com/mcls/gocard/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 var store *common.Store
 
 func resetDatabase(t *testing.T) {
-	db, err := dbutil.Connect(config.DatabaseTestURL())
-	if err != nil {
-		t.Fatal(err)
-	}
-	runner := nomadpg.NewRunner(db, migrations.Migrations)
-	if err := runner.Run(); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := db.Exec("DELETE FROM cards;"); err != nil {
-		t.Fatal(err)
-	}
+	db := testutil.ConnectDB(t)
+	testutil.ResetDB(t, db)
 	store = psql.NewStore(db)
 }
 
