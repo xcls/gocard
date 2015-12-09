@@ -97,6 +97,9 @@ func TestUserStoreAuthenticate(t *testing.T) {
 				if err == nil {
 					t.Fatal("Expected error because passwords don't match")
 				}
+				if err != common.ErrUserAuthFailed {
+					t.Fatalf("Expected ErrUserAuthFailed, but got: %q", err)
+				}
 			}
 		}
 	}

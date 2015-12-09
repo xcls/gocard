@@ -1,9 +1,11 @@
 package psql
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/mcls/gocard/stores/common"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Users dbmapStore
@@ -58,12 +60,18 @@ func (s *Users) Find(id int64) (*common.User, error) {
 
 func (s *Users) Authenticate(email, password string) (*common.User, error) {
 	model, err := s.FindByEmail(email)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		err = model.ComparePassword(password)
 	}
-	err = model.ComparePassword(password)
 	if err != nil {
-		return nil, err
+		switch err {
+		case sql.ErrNoRows:
+			return nil, common.ErrUserAuthFailed
+		case bcrypt.ErrMismatchedHashAndPassword:
+			return nil, common.ErrUserAuthFailed
+		default:
+			return nil, err
+		}
 	}
 	return model, nil
 }

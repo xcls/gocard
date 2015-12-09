@@ -1,10 +1,13 @@
 package common
 
 import (
+	"errors"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+var ErrUserAuthFailed = errors.New("Email and password don't match or user doesn't exist.")
 
 const (
 	UserPasswordCost = 11

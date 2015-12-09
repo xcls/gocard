@@ -59,3 +59,29 @@ func RegisterHandler(rc *RequestContext) error {
 		return nil
 	}
 }
+
+type LoginForm struct {
+	Email    string
+	Password string
+}
+
+func LoginHandler(rc *RequestContext) error {
+	form := new(LoginForm)
+	if rc.Request.Method == "GET" {
+		return rc.HTML(http.StatusOK, "users/login", tplVars{"User": form})
+	}
+
+	decodeForm(form, rc.Request)
+	user, err := rc.Store.Users.Authenticate(form.Email, form.Password)
+	if err != nil {
+		return rc.HTML(http.StatusOK, "users/login", tplVars{
+			"User":       form,
+			"UserErrors": []error{err},
+		})
+	}
+	if err := rc.AddFlash("Welcome, " + user.Email); err != nil {
+		return err
+	}
+	http.Redirect(rc.Writer, rc.Request, "/", http.StatusFound)
+	return nil
+}
