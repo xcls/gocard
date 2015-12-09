@@ -10,9 +10,11 @@
     <td>
       <a href="/cards/{{.ID}}/edit">
       {{.Context}}
+      -
+      {{.Front}}
       </a>
     </td>
-    <td>{{.}}</td>
+    <td>{{.CreatedAt}}</td>
   </tr>
   {{end}}
 </table>
