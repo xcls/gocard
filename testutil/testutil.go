@@ -26,14 +26,19 @@ func reconnectDB(t *testing.T) *sql.DB {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	runner := nomadpg.NewRunner(testDB, migrations.Migrations)
+
+	// FIXME(mcls): Rollback all migrations?
+
+	if err := runner.Run(); err != nil {
+		t.Fatal(err)
+	}
+
 	return testDB
 }
 
 func ResetDB(t *testing.T, db *sql.DB) {
-	runner := nomadpg.NewRunner(db, migrations.Migrations)
-	if err := runner.Run(); err != nil {
-		t.Fatal(err)
-	}
 	tables := []string{
 		"cards",
 		"decks",

@@ -75,4 +75,5 @@ type UserStore interface {
 	Insert(model *User) error
 	Find(id int64) (*User, error)
 	Authenticate(email, password string) (*User, error)
+	FindByEmail(email string) (*User, error)
 }

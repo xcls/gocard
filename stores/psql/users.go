@@ -57,6 +57,18 @@ func (s *Users) Find(id int64) (*common.User, error) {
 }
 
 func (s *Users) Authenticate(email, password string) (*common.User, error) {
+	model, err := s.FindByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	err = model.ComparePassword(password)
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func (s *Users) FindByEmail(email string) (*common.User, error) {
 	var record *UserRecord
 	err := s.DbMap.SelectOne(
 		&record, "SELECT * FROM users WHERE email = $1", email,
@@ -64,10 +76,5 @@ func (s *Users) Authenticate(email, password string) (*common.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	model := record.ToModel()
-	err = model.ComparePassword(password)
-	if err != nil {
-		return nil, err
-	}
-	return model, nil
+	return record.ToModel(), nil
 }
