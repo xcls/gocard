@@ -28,3 +28,6 @@ compile_daemon:
 
 install_daemon:
 	$(GO) get github.com/githubnemo/CompileDaemon
+
+resetdb:
+	dropdb gocard_dev; createdb gocard_dev; gocard migration run; gocard seed

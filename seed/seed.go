@@ -38,6 +38,21 @@ func Run() error {
 			front:   "Why should a doc comment always start with the name?",
 			back:    "So it can be searched with grep.",
 		},
+		{
+			context: "Naming",
+			front:   "Are underscores or mixedCaps idiomatic for package names?",
+			back:    "No",
+		},
+		{
+			context: "Naming",
+			front:   "The Reader in the bufio package is called Reader instead of BufReader to avoid what? (one word)",
+			back:    "stutter",
+		},
+		{
+			context: "Initialization",
+			front:   "When are the init() functions of package called?",
+			back:    "init is called after all the variable declarations in the package have evaluated their initializers",
+		},
 	}
 	for _, c := range cs {
 		card := &common.Card{
