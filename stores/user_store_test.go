@@ -68,6 +68,8 @@ func TestUserStoreAuthenticate(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		// Correct password
 		found, err := store.Users.Authenticate("maartencls@gmail.com", "secret")
 		if err != nil {
 			t.Fatal(err)
@@ -76,6 +78,7 @@ func TestUserStoreAuthenticate(t *testing.T) {
 			t.Fatalf("IDs not equal: %v != %v", found.ID, user.ID)
 		}
 
+		// Wrong password
 		_, err = store.Users.Authenticate("maartencls@gmail.com", "secret123")
 		if err == nil {
 			t.Fatal("Expected error because passwords don't match")
