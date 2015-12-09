@@ -25,17 +25,17 @@ func init() {
 				context text NOT NULL CHECK(length(context) < 300),
 				front text NOT NULL CHECK(length(front) < 4000),
 				back text NOT NULL CHECK(length(back) < 4000),
-				deck_id integer REFERENCES decks,
+				deck_id integer REFERENCES decks ON DELETE CASCADE,
 				created_at timestamp with time zone DEFAULT(current_timestamp)
 			)`)
 			return err
 		},
 		Down: func(ctx interface{}) error {
 			c := ctx.(*pg.Context)
-			if _, err := c.Tx.Exec("DROP TABLE IF EXISTS decks"); err != nil {
+			if _, err := c.Tx.Exec("DROP TABLE IF EXISTS cards"); err != nil {
 				return err
 			}
-			_, err := c.Tx.Exec("DROP TABLE IF EXISTS cards")
+			_, err := c.Tx.Exec("DROP TABLE IF EXISTS decks")
 			return err
 		},
 	}

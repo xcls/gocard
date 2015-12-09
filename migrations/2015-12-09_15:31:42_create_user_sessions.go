@@ -14,7 +14,7 @@ func init() {
 			CREATE TABLE user_sessions (
 				id serial PRIMARY KEY,
 				uid text NOT NULL CHECK(length(uid) < 300) UNIQUE,
-				user_id integer NOT NULL REFERENCES users,
+				user_id integer NOT NULL REFERENCES users ON DELETE CASCADE,
 				created_at timestamp with time zone DEFAULT(current_timestamp)
 			)`)
 			return err
