@@ -54,22 +54,34 @@ func withContext(f func(*RequestContext) error) http.HandlerFunc {
 			Store:   stores.Store,
 		}
 
-		// User Session Management
-		session, err := jar.Get(r, "uid")
-		if err != nil {
-			handlerInternalError(rc, err)
-		}
-		uid := session.Values["uid"]
-		if val, ok := uid.(string); ok == true && val != "" {
-			userSession, err := rc.Store.UserSessions.Find(val)
-			applog.Printf("err        : %+v", err)
-			applog.Printf("userSession: %+v", userSession)
-		}
+		determineCurrentUser(rc)
 
 		// Request handler
 		if err := f(rc); err != nil {
 			handlerInternalError(rc, err)
 		}
+	}
+}
+
+func determineCurrentUser(rc *RequestContext) {
+	// User Session Management
+	session, err := jar.Get(rc.Request, "uid")
+	if err != nil {
+		handlerInternalError(rc, err)
+	}
+	uid := session.Values["uid"]
+	if val, ok := uid.(string); ok == true && val != "" {
+		userSession, err := rc.Store.UserSessions.Find(val)
+		if err != nil {
+			applog.Printf("Failed to set current user: %v", err)
+			return
+		}
+		user, err := rc.Store.Users.Find(userSession.UserID)
+		if err != nil {
+			applog.Printf("Failed to set current user: %v", err)
+			return
+		}
+		rc.CurrentUser = user
 	}
 }
 

@@ -10,9 +10,10 @@ import (
 type tplVars map[string]interface{}
 
 type RequestContext struct {
-	Writer  http.ResponseWriter
-	Request *http.Request
-	Store   *common.Store
+	Writer      http.ResponseWriter
+	Request     *http.Request
+	Store       *common.Store
+	CurrentUser *common.User
 }
 
 func (c *RequestContext) HTML(status int, tpl string, vars tplVars) error {
@@ -24,6 +25,7 @@ func (c *RequestContext) HTML(status int, tpl string, vars tplVars) error {
 		return err
 	}
 	vars["Flashes"] = flashes
+	vars["CurrentUser"] = c.CurrentUser
 	return renderer.HTML(c.Writer, status, tpl, vars)
 }
 
