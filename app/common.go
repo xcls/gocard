@@ -33,6 +33,14 @@ func (c *RequestContext) RenderInternalServerErrorHTML(err error) {
 	http.Error(c.Writer, err.Error(), http.StatusInternalServerError)
 }
 
+func (c *RequestContext) RedirectWithFlash(url, msg string) error {
+	if err := c.AddFlash(msg); err != nil {
+		return err
+	}
+	http.Redirect(c.Writer, c.Request, url, http.StatusFound)
+	return nil
+}
+
 func (c *RequestContext) flashes() ([]interface{}, error) {
 	session, err := jar.Get(c.Request, "ses")
 	if err != nil {

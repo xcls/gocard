@@ -35,6 +35,10 @@ func (f *NewUserForm) Validate(users common.UserStore) []error {
 }
 
 func RegisterHandler(rc *RequestContext) error {
+	if rc.CurrentUser != nil {
+		return rc.RedirectWithFlash("/", "Already logged in")
+	}
+
 	form := new(NewUserForm)
 	if rc.Request.Method == "GET" {
 		return rc.HTML(http.StatusOK, "users/register", tplVars{"User": form})
@@ -66,6 +70,10 @@ type LoginForm struct {
 }
 
 func LoginHandler(rc *RequestContext) error {
+	if rc.CurrentUser != nil {
+		return rc.RedirectWithFlash("/", "Already logged in")
+	}
+
 	form := new(LoginForm)
 	if rc.Request.Method == "GET" {
 		return rc.HTML(http.StatusOK, "users/login", tplVars{"User": form})
