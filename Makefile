@@ -24,7 +24,7 @@ autobuild:
 	$(WATCH_GO) | xargs -n1 -I{} $(MAKE) build
 
 compile_daemon:
-	CompileDaemon -exclude-dir=.git -command="gocard server" -color -pattern "(.+\\.go|.+\\.c|.+\\.tmpl)$$"
+	CompileDaemon -exclude-dir=.git -build="go install" -command="gocard server" -color -pattern "(.+\\.go|.+\\.c|.+\\.tmpl)$$"
 
 install_daemon:
 	$(GO) get github.com/githubnemo/CompileDaemon

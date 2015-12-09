@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/mcls/gocard/stores/common"
 )
 
 type tplVars map[string]interface{}
@@ -11,6 +12,7 @@ type tplVars map[string]interface{}
 type RequestContext struct {
 	Writer  http.ResponseWriter
 	Request *http.Request
+	Store   *common.Store
 }
 
 func (c *RequestContext) HTML(status int, tpl string, vars tplVars) error {

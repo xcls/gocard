@@ -28,3 +28,9 @@ func (v *validator) ValidateMinLength(label, val string, length int) {
 		v.addError(fmt.Errorf("%s must be at least %d characters long", label, length))
 	}
 }
+
+func (v *validator) ValidateConfirmation(label, original string, confirmation string) {
+	if original != confirmation {
+		v.addError(fmt.Errorf("%s and its confirmation don't match", label))
+	}
+}

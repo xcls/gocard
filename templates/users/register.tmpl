@@ -1,0 +1,24 @@
+<h2>Register</h2>
+
+{{range .UserErrors}}
+<p class="text-danger">{{.}}</p>
+{{end}}
+
+<form method="post" action="/register" class="form form-vertical">
+  <div class="form-group">
+    <label>Email</label>
+    <input class="form-control" name="Email" value="{{.User.Email}}">
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <input class="form-control" name="Password" value="{{.User.Password}}" type="password">
+  </div>
+
+  <div class="form-group">
+    <label>Password Confirmation</label>
+    <input class="form-control" name="PasswordConfirmation" value="{{.User.PasswordConfirmation}}" type="password">
+  </div>
+
+  <input class="btn btn-default" value="Register" type="submit">
+</form>

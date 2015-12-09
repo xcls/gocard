@@ -26,6 +26,7 @@ func StartServer() {
 	// Routes
 	r := mux.NewRouter()
 	r.HandleFunc("/", withContext(indexHandler))
+	r.HandleFunc("/register", withContext(RegisterHandler))
 	r.HandleFunc("/decks/new", withContext(NewDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}", withContext(ShowDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", withContext(NewCardHandler))
@@ -46,7 +47,11 @@ func StartServer() {
 
 func withContext(f func(*RequestContext) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rc := &RequestContext{Writer: w, Request: r}
+		rc := &RequestContext{
+			Writer:  w,
+			Request: r,
+			Store:   stores.Store,
+		}
 		if err := f(rc); err != nil {
 			rc.RenderInternalServerErrorHTML(err)
 			applog.Printf("Internal Server Error on %q \n", r.RequestURI)
