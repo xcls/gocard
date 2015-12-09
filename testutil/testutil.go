@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"database/sql"
+	"fmt"
 	"testing"
 
 	"github.com/mcls/gocard/config"
@@ -33,7 +34,16 @@ func ResetDB(t *testing.T, db *sql.DB) {
 	if err := runner.Run(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.Exec("DELETE FROM cards;"); err != nil {
-		t.Fatal(err)
+	tables := []string{
+		"cards",
+		"decks",
+		"users",
+	}
+	for _, table := range tables {
+		sql := fmt.Sprintf("DELETE FROM %s", table)
+		if _, err := db.Exec(sql); err != nil {
+			t.Log(sql)
+			t.Fatal(err)
+		}
 	}
 }
