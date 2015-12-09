@@ -17,53 +17,68 @@ func Run() error {
 	}
 
 	// Decks & Cards
-	deck := &common.Deck{Name: "Effective Go"}
-	err = stores.Store.Decks.Insert(deck)
-	if err != nil {
-		return err
-	}
-
-	cs := []struct {
-		context string
-		front   string
-		back    string
+	var decksWithCards = []struct {
+		deck  *common.Deck
+		cards []*common.Card
 	}{
 		{
-			context: "Formatting",
-			front:   "Which tool should you use for formatting?",
-			back:    "gofmt",
+			&common.Deck{Name: "Effective Go"},
+			[]*common.Card{
+				{
+					Context: "Formatting",
+					Front:   "Which tool should you use for formatting?",
+					Back:    "gofmt",
+				},
+				{
+					Context: "Commentary",
+					Front:   "Why should a doc comment always start with the name?",
+					Back:    "So it can be searched with grep.",
+				},
+				{
+					Context: "Naming",
+					Front:   "Are underscores or mixedCaps idiomatic for package names?",
+					Back:    "No",
+				},
+				{
+					Context: "Naming",
+					Front:   "The Reader in the bufio package is called Reader instead of BufReader to avoid what? (one word)",
+					Back:    "stutter",
+				},
+				{
+					Context: "Initialization",
+					Front:   "When are the init() functions of package called?",
+					Back:    "init is called after all the variable declarations in the package have evaluated their initializers",
+				},
+			},
 		},
+
 		{
-			context: "Commentary",
-			front:   "Why should a doc comment always start with the name?",
-			back:    "So it can be searched with grep.",
-		},
-		{
-			context: "Naming",
-			front:   "Are underscores or mixedCaps idiomatic for package names?",
-			back:    "No",
-		},
-		{
-			context: "Naming",
-			front:   "The Reader in the bufio package is called Reader instead of BufReader to avoid what? (one word)",
-			back:    "stutter",
-		},
-		{
-			context: "Initialization",
-			front:   "When are the init() functions of package called?",
-			back:    "init is called after all the variable declarations in the package have evaluated their initializers",
+			&common.Deck{Name: "Spaced Repitition"},
+			[]*common.Card{
+				{
+					Context: "Definitions",
+					Front:   "What is the spacing effect?",
+					Back:    "The phenomenon whereby animals (including humans) more easily remember or learn items when they are studied via spaced presentation rather than cramming",
+				},
+				{
+					Context: "Definitions",
+					Front:   "What is the spaced presentation?",
+					Back:    "A learning technique that uses increasing intervals of time between subsequent reviews of already learned material ",
+				},
+			},
 		},
 	}
-	for _, c := range cs {
-		card := &common.Card{
-			Context: c.context,
-			Front:   c.front,
-			Back:    c.back,
-			DeckID:  deck.ID,
-		}
-		err = stores.Store.Cards.Insert(card)
+	for _, o := range decksWithCards {
+		err = stores.Store.Decks.Insert(o.deck)
 		if err != nil {
 			return err
+		}
+		for _, card := range o.cards {
+			card.DeckID = o.deck.ID
+			err = stores.Store.Cards.Insert(card)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
