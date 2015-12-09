@@ -1,9 +1,10 @@
 package migrations
 
 import (
+	"database/sql"
 	"log"
 
-	"github.com/mcls/gocard/dbutil"
+	"github.com/mcls/gocard/config"
 	"github.com/mcls/nomad"
 	nomadpg "github.com/mcls/nomad/pg"
 	// Setup postgres driver
@@ -17,7 +18,7 @@ func init() {
 }
 
 func NewRunner() *nomad.Runner {
-	db, err := dbutil.Connect()
+	db, err := sql.Open("postgres", config.DatabaseURL())
 	if err != nil {
 		log.Fatal(err)
 	}
