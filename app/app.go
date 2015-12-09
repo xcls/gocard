@@ -53,12 +53,30 @@ func withContext(f func(*RequestContext) error) http.HandlerFunc {
 			Request: r,
 			Store:   stores.Store,
 		}
+
+		// User Session Management
+		session, err := jar.Get(r, "uid")
+		if err != nil {
+			handlerInternalError(rc, err)
+		}
+		uid := session.Values["uid"]
+		if val, ok := uid.(string); ok == true && val != "" {
+			userSession, err := rc.Store.UserSessions.Find(val)
+			applog.Printf("err        : %+v", err)
+			applog.Printf("userSession: %+v", userSession)
+		}
+
+		// Request handler
 		if err := f(rc); err != nil {
-			rc.RenderInternalServerErrorHTML(err)
-			applog.Printf("Internal Server Error on %q \n", r.RequestURI)
-			applog.Printf("Error: %v \n", err)
+			handlerInternalError(rc, err)
 		}
 	}
+}
+
+func handlerInternalError(rc *RequestContext, err error) {
+	rc.RenderInternalServerErrorHTML(err)
+	applog.Printf("Internal Server Error on %q \n", rc.Request.RequestURI)
+	applog.Printf("Error: %v \n", err)
 }
 
 func indexHandler(rc *RequestContext) error {

@@ -42,6 +42,7 @@ func ResetDB(t *testing.T, db *sql.DB) {
 	tables := []string{
 		"cards",
 		"decks",
+		"user_sessions",
 		"users",
 	}
 	for _, table := range tables {

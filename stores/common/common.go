@@ -1,7 +1,10 @@
 package common
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
+	"io"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -14,9 +17,10 @@ const (
 )
 
 type Store struct {
-	Cards CardStore
-	Decks DeckStore
-	Users UserStore
+	Cards        CardStore
+	Decks        DeckStore
+	Users        UserStore
+	UserSessions UserSessionStore
 }
 
 type Card struct {
@@ -60,6 +64,29 @@ func (m *User) ComparePassword(password string) error {
 	)
 }
 
+type UserSession struct {
+	ID        int64
+	UID       string `json:"-"`
+	UserID    int64
+	CreatedAt time.Time
+}
+
+func NewUserSession(userID int64) *UserSession {
+	return &UserSession{
+		UID:    generateSessionID(),
+		UserID: userID,
+	}
+}
+
+// generateSessionID generates a random session ID
+func generateSessionID() string {
+	b := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, b); err != nil {
+		return ""
+	}
+	return base64.URLEncoding.EncodeToString(b)
+}
+
 type CardStore interface {
 	Insert(model *Card) error
 	Update(model *Card) error
@@ -79,4 +106,9 @@ type UserStore interface {
 	Find(id int64) (*User, error)
 	Authenticate(email, password string) (*User, error)
 	FindByEmail(email string) (*User, error)
+}
+
+type UserSessionStore interface {
+	Insert(model *UserSession) error
+	Find(uid string) (*UserSession, error)
 }

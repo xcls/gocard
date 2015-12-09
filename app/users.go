@@ -79,6 +79,22 @@ func LoginHandler(rc *RequestContext) error {
 			"UserErrors": []error{err},
 		})
 	}
+
+	// Set user session
+	userSession := common.NewUserSession(user.ID)
+	err = rc.Store.UserSessions.Insert(userSession)
+	if err != nil {
+		return err
+	}
+	session, err := jar.Get(rc.Request, "uid")
+	if err != nil {
+		return err
+	}
+	session.Values["uid"] = userSession.UID
+	if err := session.Save(rc.Request, rc.Writer); err != nil {
+		return err
+	}
+
 	if err := rc.AddFlash("Welcome, " + user.Email); err != nil {
 		return err
 	}

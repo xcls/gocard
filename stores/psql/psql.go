@@ -15,9 +15,10 @@ type dbmapStore struct {
 func NewStore(db *sql.DB) *common.Store {
 	dbmap := newDbMap(db)
 	return &common.Store{
-		Cards: &Cards{DbMap: dbmap},
-		Decks: &Decks{DbMap: dbmap},
-		Users: &Users{DbMap: dbmap},
+		Cards:        &Cards{DbMap: dbmap},
+		Decks:        &Decks{DbMap: dbmap},
+		Users:        &Users{DbMap: dbmap},
+		UserSessions: &UserSessions{DbMap: dbmap},
 	}
 }
 
@@ -28,5 +29,6 @@ func newDbMap(db *sql.DB) *gorp.DbMap {
 	dbmap.AddTableWithName(CardRecord{}, "cards").SetKeys(true, "id")
 	dbmap.AddTableWithName(DeckRecord{}, "decks").SetKeys(true, "id")
 	dbmap.AddTableWithName(UserRecord{}, "users").SetKeys(true, "id")
+	dbmap.AddTableWithName(UserSessionRecord{}, "user_sessions").SetKeys(true, "id")
 	return dbmap
 }
