@@ -72,9 +72,9 @@ func (s *Reviews) ChangeEnabledForUserDeck(enabled bool, userID, deckID int64) e
 
 	// update existing reviews
 	_, err := s.DbMap.Exec(
-		`UPDATE reviews SET enabled = $3
-		FROM reviews r JOIN cards c ON c.id = r.card_id
-		WHERE r.user_id = $1 AND c.deck_id = $2`, userID, deckID, enabled)
+		`UPDATE reviews r SET enabled = $3 FROM cards c
+		WHERE c.id = r.card_id AND r.user_id = $1 AND c.deck_id = $2`,
+		userID, deckID, enabled)
 	return err
 }
 
