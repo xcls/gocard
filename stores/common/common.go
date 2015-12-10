@@ -135,6 +135,7 @@ type DeckStore interface {
 
 type CardReviewStore interface {
 	AllByUserID(userID int64) ([]*CardReview, error)
+	EnabledByUserID(userID int64) ([]*CardReview, error)
 }
 
 type ReviewStore interface {

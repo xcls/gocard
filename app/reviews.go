@@ -7,7 +7,7 @@ import (
 )
 
 func ReviewHandler(rc *RequestContext) error {
-	crs, err := rc.Store.CardReviews.AllByUserID(rc.CurrentUser.ID)
+	crs, err := rc.Store.CardReviews.EnabledByUserID(rc.CurrentUser.ID)
 	if err != nil {
 		return err
 	}

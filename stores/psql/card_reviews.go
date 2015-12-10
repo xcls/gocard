@@ -94,6 +94,16 @@ func (s *CardReviews) AllByUserID(userID int64) ([]*common.CardReview, error) {
 	return s.recordsToModels(rows), nil
 }
 
+func (s *CardReviews) EnabledByUserID(userID int64) ([]*common.CardReview, error) {
+	var rows []*CardReviewRecord
+	sql := SqlStart + ` WHERE user_id = $1 AND enabled = true`
+	_, err := s.DbMap.Select(&rows, sql, userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.recordsToModels(rows), nil
+}
+
 func (s *CardReviews) recordsToModels(rows []*CardReviewRecord) []*common.CardReview {
 	models := make([]*common.CardReview, len(rows))
 	for i, record := range rows {
