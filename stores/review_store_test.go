@@ -184,7 +184,5 @@ func TestDisableAllForDeckID(t *testing.T) {
 				t.Fatalf("Expected Enabled to be false: %+v", x)
 			}
 		}
-
 	}
-
 }
