@@ -9,6 +9,7 @@ import (
 const (
 	SqlStart = `SELECT
 	  r.id AS review_id,
+	  r.enabled AS enabled,
 	  r.ease_factor AS ease_factor,
 	  r.interval AS interval,
 	  r.due_on AS due_on,
@@ -28,6 +29,7 @@ type CardReviews dbmapStore
 
 type CardReviewRecord struct {
 	ID         int64     `db:"review_id"`
+	Enabled    bool      `db:"enabled"`
 	EaseFactor float64   `db:"ease_factor"`
 	Interval   int64     `db:"interval"`
 	DueOn      time.Time `db:"due_on"`
@@ -45,6 +47,7 @@ type CardReviewRecord struct {
 func (r *CardReviewRecord) ToModel() *common.CardReview {
 	return &common.CardReview{
 		ID:         r.ID,
+		Enabled:    r.Enabled,
 		EaseFactor: r.EaseFactor,
 		Interval:   r.Interval,
 		DueOn:      r.DueOn,
@@ -63,6 +66,7 @@ func (r *CardReviewRecord) ToModel() *common.CardReview {
 func (r *CardReviewRecord) FromModel(m *common.CardReview) *CardReviewRecord {
 	return &CardReviewRecord{
 		ID:         m.ID,
+		Enabled:    m.Enabled,
 		EaseFactor: m.EaseFactor,
 		Interval:   m.Interval,
 		DueOn:      m.DueOn,

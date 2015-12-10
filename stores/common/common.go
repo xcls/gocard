@@ -38,6 +38,7 @@ type Card struct {
 // conveniently retrieved from stores
 type CardReview struct {
 	ID         int64
+	Enabled    bool
 	EaseFactor float64
 	Interval   int64
 	DueOn      time.Time
@@ -61,6 +62,7 @@ type Deck struct {
 
 type Review struct {
 	ID         int64
+	Enabled    bool      // Enabled for review or not?
 	EaseFactor float64   // The E-Factor is used to determine next interval length. Should be 1.3 <= EF <= 2.5
 	Interval   int64     // Indicates the interval in days
 	DueOn      time.Time // When the next review is due

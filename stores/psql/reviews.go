@@ -11,6 +11,7 @@ type Reviews dbmapStore
 
 type ReviewRecord struct {
 	ID         int64     `db:"id"`
+	Enabled    bool      `db:"enabled"`
 	EaseFactor float64   `db:"ease_factor"`
 	Interval   int64     `db:"interval"`
 	DueOn      time.Time `db:"due_on"`
@@ -27,6 +28,7 @@ func (r *ReviewRecord) PreInsert(s gorp.SqlExecutor) error {
 func (r *ReviewRecord) ToModel() *common.Review {
 	return &common.Review{
 		ID:         r.ID,
+		Enabled:    r.Enabled,
 		EaseFactor: r.EaseFactor,
 		Interval:   r.Interval,
 		DueOn:      r.DueOn,
@@ -39,6 +41,7 @@ func (r *ReviewRecord) ToModel() *common.Review {
 func (r *ReviewRecord) FromModel(m *common.Review) *ReviewRecord {
 	return &ReviewRecord{
 		ID:         m.ID,
+		Enabled:    m.Enabled,
 		EaseFactor: m.EaseFactor,
 		Interval:   m.Interval,
 		DueOn:      m.DueOn,

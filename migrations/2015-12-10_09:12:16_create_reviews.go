@@ -13,12 +13,14 @@ func init() {
 			_, err := c.Tx.Exec(`
 			CREATE TABLE reviews (
 				id serial PRIMARY KEY,
+				enabled		boolean			NOT NULL DEFAULT(true),
 				ease_factor numeric(6, 4)	NOT NULL CHECK(ease_factor >= 1.3),
 				interval	integer			NOT NULL CHECK(interval >= 0),
 				due_on		timestamp with time zone DEFAULT(current_timestamp),
 				card_id		integer			NOT NULL REFERENCES cards ON DELETE RESTRICT,
 				user_id		integer			NOT NULL REFERENCES users ON DELETE CASCADE,
-				created_at timestamp with time zone DEFAULT(current_timestamp)
+				created_at timestamp with time zone DEFAULT(current_timestamp),
+				UNIQUE(card_id, user_id)
 			)`)
 			return err
 		},
