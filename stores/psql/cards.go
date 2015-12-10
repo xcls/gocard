@@ -20,6 +20,12 @@ type CardRecord struct {
 	// UpdatedAt time.Time `db:"updated_at"`
 }
 
+// implement the PreInsert and PreUpdate hooks
+func (c *CardRecord) PreInsert(s gorp.SqlExecutor) error {
+	c.CreatedAt = time.Now()
+	return nil
+}
+
 func (r *CardRecord) ToModel() *common.Card {
 	return &common.Card{
 		ID:        r.ID,
@@ -42,11 +48,6 @@ func (r *CardRecord) FromModel(m *common.Card) *CardRecord {
 	}
 }
 
-// implement the PreInsert and PreUpdate hooks
-func (c *CardRecord) PreInsert(s gorp.SqlExecutor) error {
-	c.CreatedAt = time.Now()
-	return nil
-}
 func (s *Cards) Insert(model *common.Card) error {
 	record := new(CardRecord).FromModel(model)
 	err := s.DbMap.Insert(record)

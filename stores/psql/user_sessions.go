@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/mcls/gocard/stores/common"
+	"gopkg.in/gorp.v1"
 )
 
 type UserSessions dbmapStore
@@ -13,6 +14,11 @@ type UserSessionRecord struct {
 	UID       string    `db:"uid"`
 	UserID    int64     `db:"user_id"`
 	CreatedAt time.Time `db:"created_at"`
+}
+
+func (r *UserSessionRecord) PreInsert(s gorp.SqlExecutor) error {
+	r.CreatedAt = time.Now()
+	return nil
 }
 
 func (r *UserSessionRecord) ToModel() *common.UserSession {

@@ -17,6 +17,11 @@ type DeckRecord struct {
 	// UpdatedAt time.Time `db:"updated_at"`
 }
 
+func (r *DeckRecord) PreInsert(s gorp.SqlExecutor) error {
+	r.CreatedAt = time.Now()
+	return nil
+}
+
 func (r *DeckRecord) ToModel() *common.Deck {
 	return &common.Deck{
 		ID:        r.ID,
@@ -31,11 +36,6 @@ func (r *DeckRecord) FromModel(m *common.Deck) *DeckRecord {
 		Name:      m.Name,
 		CreatedAt: m.CreatedAt,
 	}
-}
-
-func (r *DeckRecord) PreInsert(s gorp.SqlExecutor) error {
-	r.CreatedAt = time.Now()
-	return nil
 }
 
 func (s *Decks) Insert(model *common.Deck) error {

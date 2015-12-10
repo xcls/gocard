@@ -6,6 +6,7 @@ import (
 
 	"github.com/mcls/gocard/stores/common"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/gorp.v1"
 )
 
 type Users dbmapStore
@@ -16,6 +17,17 @@ type UserRecord struct {
 	EncryptedPassword string    `db:"encrypted_password"`
 	CreatedAt         time.Time `db:"created_at"`
 	UpdatedAt         time.Time `db:"updated_at"`
+}
+
+func (r *UserRecord) PreInsert(s gorp.SqlExecutor) error {
+	r.CreatedAt = time.Now()
+	r.UpdatedAt = r.CreatedAt
+	return nil
+}
+
+func (r *UserRecord) PreUpdate(s gorp.SqlExecutor) error {
+	r.UpdatedAt = time.Now()
+	return nil
 }
 
 func (r *UserRecord) ToModel() *common.User {
