@@ -76,11 +76,17 @@ func (s *Reviews) EnableAllForDeckID(userID int64, deckID int64) error {
 	}
 
 	// update existing reviews
-	_, err = s.DbMap.Exec(`
-	UPDATE reviews SET enabled = true
-	FROM reviews r JOIN cards c ON c.id = r.card_id
-	WHERE r.user_id = $1 AND c.deck_id = $2
-	`, userID, deckID)
+	return s.updateDeckCardsEnabled(true, userID, deckID)
+}
 
+func (s *Reviews) DisableAllForDeckID(userID int64, deckID int64) error {
+	return s.updateDeckCardsEnabled(false, userID, deckID)
+}
+
+func (s *Reviews) updateDeckCardsEnabled(enabled bool, userID, deckID int64) error {
+	_, err := s.DbMap.Exec(
+		`UPDATE reviews SET enabled = $3
+		FROM reviews r JOIN cards c ON c.id = r.card_id
+		WHERE r.user_id = $1 AND c.deck_id = $2`, userID, deckID, enabled)
 	return err
 }
