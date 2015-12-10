@@ -33,6 +33,7 @@ func StartServer() {
 	r.HandleFunc("/decks/{id:[0-9]+}", withContext(ShowDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", withContext(NewCardHandler))
 	r.HandleFunc("/cards/{id:[0-9]+}/edit", withContext(EditCardHandler))
+	r.HandleFunc("/decks/{id:[0-9]+}/toggle", withContext(ToggleDeckHandler))
 
 	// Middleware
 	httpLogger := &negroni.Logger{applog}

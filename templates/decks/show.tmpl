@@ -1,6 +1,14 @@
 <h2>Deck: {{.Deck.Name}}</h2>
 <p>
-<a href="/decks/{{.Deck.ID}}/cards/new" class="btn btn-default">Add Card</a>
+  <a href="/decks/{{.Deck.ID}}/cards/new" class="btn btn-default">Add Card</a>
+
+  <form method="POST" action="/decks/{{.Deck.ID}}/toggle">
+    <input type="submit" class="btn btn-default" value="Enable">
+  </form>
+
+  <form method="POST" action="/decks/{{.Deck.ID}}/toggle?disable=true">
+    <input type="submit" class="btn btn-default" value="Disable">
+  </form>
 </p>
 
 <table class="table">

@@ -122,10 +122,10 @@ func TestReviewStoreInsert_CantDuplicateCardIDPerUserID(t *testing.T) {
 	}
 }
 
-func TestEnableAllForDeckID(t *testing.T) {
+func TestChangeEnabledForUserDeck(t *testing.T) {
 	for _, s := range setupStores(t) {
 		fx := setupReviewStoreFixture(t, store)
-		err := s.Reviews.EnableAllForDeckID(fx.user.ID, fx.deckOne.ID)
+		err := s.Reviews.ChangeEnabledForUserDeck(true, fx.user.ID, fx.deckOne.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -141,7 +141,7 @@ func TestEnableAllForDeckID(t *testing.T) {
 		if err := s.Cards.Insert(newCard(fx.deckOne.ID, "Test 3")); err != nil {
 			t.Fatal(err)
 		}
-		err = s.Reviews.EnableAllForDeckID(fx.user.ID, fx.deckOne.ID)
+		err = s.Reviews.ChangeEnabledForUserDeck(true, fx.user.ID, fx.deckOne.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -157,29 +157,20 @@ func TestEnableAllForDeckID(t *testing.T) {
 				t.Fatalf("Expected Enabled to be true: %+v", x)
 			}
 		}
-	}
-}
 
-func TestDisableAllForDeckID(t *testing.T) {
-	var err error
-	for _, s := range setupStores(t) {
-		fx := setupReviewStoreFixture(t, store)
-		err = s.Reviews.EnableAllForDeckID(fx.user.ID, fx.deckOne.ID)
+		// Disable cards again
+		err = s.Reviews.ChangeEnabledForUserDeck(false, fx.user.ID, fx.deckOne.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = s.Reviews.DisableAllForDeckID(fx.user.ID, fx.deckOne.ID)
+		cardReviews, err = s.CardReviews.AllByUserID(fx.user.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
-		crs, err := s.CardReviews.AllByUserID(fx.user.ID)
-		if err != nil {
-			t.Fatal(err)
+		if len(cardReviews) != 3 {
+			t.Fatalf("Expected 3 records: %+q", cardReviews)
 		}
-		if len(crs) != 2 {
-			t.Fatalf("Wrong length: %+v", crs)
-		}
-		for _, x := range crs {
+		for _, x := range cardReviews {
 			if x.Enabled != false {
 				t.Fatalf("Expected Enabled to be false: %+v", x)
 			}

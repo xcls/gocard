@@ -75,3 +75,30 @@ func ShowDeckHandler(rc *RequestContext) error {
 		"Cards": cards,
 	})
 }
+
+func ToggleDeckHandler(rc *RequestContext) error {
+	id, err := strconv.Atoi(rc.Vars()["id"])
+	if err != nil {
+		return err
+	}
+	deck, err := stores.Store.Decks.Find(int64(id))
+	if err != nil {
+		return err
+	}
+
+	q := rc.Request.URL.Query()
+	enabled := q.Get("disable") != "true"
+	err = rc.Store.Reviews.ChangeEnabledForUserDeck(enabled, rc.CurrentUser.ID, deck.ID)
+	if err != nil {
+		return err
+	}
+
+	var msg string
+	if enabled {
+		msg = "Cards in deck enabled"
+	} else {
+		msg = "Cards in deck disabled"
+	}
+	url := fmt.Sprintf("/decks/%d", deck.ID)
+	return rc.RedirectWithFlash(url, msg)
+}

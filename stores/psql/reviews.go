@@ -62,8 +62,23 @@ func (s *Reviews) Insert(model *common.Review) error {
 	return nil
 }
 
-func (s *Reviews) EnableAllForDeckID(userID int64, deckID int64) error {
-	// insert missing reviews
+func (s *Reviews) ChangeEnabledForUserDeck(enabled bool, userID, deckID int64) error {
+	if enabled {
+		// Create missing reviews so they can be enabled
+		if err := s.insertMissingForUserDeck(userID, deckID); err != nil {
+			return err
+		}
+	}
+
+	// update existing reviews
+	_, err := s.DbMap.Exec(
+		`UPDATE reviews SET enabled = $3
+		FROM reviews r JOIN cards c ON c.id = r.card_id
+		WHERE r.user_id = $1 AND c.deck_id = $2`, userID, deckID, enabled)
+	return err
+}
+
+func (s *Reviews) insertMissingForUserDeck(userID, deckID int64) error {
 	_, err := s.DbMap.Exec(`
 	INSERT INTO reviews (card_id, user_id, enabled, ease_factor, interval, due_on)
 	SELECT c.id, $1, true, 2.5, 0, NOW()
@@ -71,22 +86,5 @@ func (s *Reviews) EnableAllForDeckID(userID int64, deckID int64) error {
 	WHERE c.id NOT IN (SELECT card_id FROM reviews WHERE user_id = $1)
 	AND c.deck_id = $2
 	`, userID, deckID)
-	if err != nil {
-		return err
-	}
-
-	// update existing reviews
-	return s.updateDeckCardsEnabled(true, userID, deckID)
-}
-
-func (s *Reviews) DisableAllForDeckID(userID int64, deckID int64) error {
-	return s.updateDeckCardsEnabled(false, userID, deckID)
-}
-
-func (s *Reviews) updateDeckCardsEnabled(enabled bool, userID, deckID int64) error {
-	_, err := s.DbMap.Exec(
-		`UPDATE reviews SET enabled = $3
-		FROM reviews r JOIN cards c ON c.id = r.card_id
-		WHERE r.user_id = $1 AND c.deck_id = $2`, userID, deckID, enabled)
 	return err
 }
