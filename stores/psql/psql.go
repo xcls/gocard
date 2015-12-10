@@ -15,6 +15,7 @@ type dbmapStore struct {
 func NewStore(db *sql.DB) *common.Store {
 	dbmap := newDbMap(db)
 	return &common.Store{
+		CardReviews:  &CardReviews{DbMap: dbmap},
 		Cards:        &Cards{DbMap: dbmap},
 		Decks:        &Decks{DbMap: dbmap},
 		Reviews:      &Reviews{DbMap: dbmap},

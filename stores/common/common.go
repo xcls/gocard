@@ -17,6 +17,7 @@ const (
 )
 
 type Store struct {
+	CardReviews  CardReviewStore
 	Cards        CardStore
 	Decks        DeckStore
 	Reviews      ReviewStore
@@ -31,6 +32,24 @@ type Card struct {
 	Back      string
 	DeckID    int64
 	CreatedAt time.Time
+}
+
+// CardReview is a combination of Review, Card and Deck so it can be
+// conveniently retrieved from stores
+type CardReview struct {
+	ID         int64
+	EaseFactor float64
+	Interval   int64
+	DueOn      time.Time
+	UserID     int64
+
+	CardID      int64
+	CardContext string
+	CardFront   string
+	CardBack    string
+
+	DeckID   int64
+	DeckName string
 }
 
 type Deck struct {
@@ -112,9 +131,12 @@ type DeckStore interface {
 	All() ([]*Deck, error)
 }
 
+type CardReviewStore interface {
+	AllByUserID(userID int64) ([]*CardReview, error)
+}
+
 type ReviewStore interface {
 	Insert(*Review) error
-	// AllByUserID(int64) ([]*Review, error)
 }
 
 type UserStore interface {

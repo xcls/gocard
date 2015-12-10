@@ -32,8 +32,21 @@ func TestReviewStoreInsert(t *testing.T) {
 		if err := store.Reviews.Insert(review); err != nil {
 			t.Fatal(err)
 		}
-		if review.ID <= 0 {
-			t.Fatalf("Invalid review ID: %+v", review.ID)
+
+		cardReviews, err := store.CardReviews.AllByUserID(user.ID)
+		if err != nil {
+			t.Fatal(err)
 		}
+		if len(cardReviews) != 1 {
+			t.Fatalf("Only expeted 1 record: %+v", cardReviews)
+		}
+		got := cardReviews[0]
+		if got.CardID != review.CardID {
+			t.Fatalf("CardID mismatch: %+v != %+v", got.CardID, review.CardID)
+		}
+		if got.DeckName != deck.Name {
+			t.Fatalf("Deck name mismatch: %+v != %+v", got.DeckName, deck.Name)
+		}
+
 	}
 }
