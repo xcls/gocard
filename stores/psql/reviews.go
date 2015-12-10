@@ -63,6 +63,7 @@ func (s *Reviews) Insert(model *common.Review) error {
 }
 
 func (s *Reviews) EnableAllForDeckID(userID int64, deckID int64) error {
+	// insert missing reviews
 	_, err := s.DbMap.Exec(`
 	INSERT INTO reviews (card_id, user_id, enabled, ease_factor, interval, due_on)
 	SELECT c.id, $1, true, 2.5, 0, NOW()
@@ -70,5 +71,16 @@ func (s *Reviews) EnableAllForDeckID(userID int64, deckID int64) error {
 	WHERE c.id NOT IN (SELECT card_id FROM reviews WHERE user_id = $1)
 	AND c.deck_id = $2
 	`, userID, deckID)
+	if err != nil {
+		return err
+	}
+
+	// update existing reviews
+	_, err = s.DbMap.Exec(`
+	UPDATE reviews SET enabled = true
+	FROM reviews r JOIN cards c ON c.id = r.card_id
+	WHERE r.user_id = $1 AND c.deck_id = $2
+	`, userID, deckID)
+
 	return err
 }

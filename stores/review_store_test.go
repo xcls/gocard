@@ -117,13 +117,28 @@ func TestEnableAllForDeckID(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
 		cardReviews, err := store.CardReviews.AllByUserID(user.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if len(cardReviews) != 2 {
-			t.Fatalf("Only expected 2 records: %+q", cardReviews)
+			t.Fatalf("Expected 2 records: %+q", cardReviews)
+		}
+
+		// Add another card after others have been enabled
+		if err := store.Cards.Insert(newCard(deck.ID, "Test 3")); err != nil {
+			t.Fatal(err)
+		}
+		err = store.Reviews.EnableAllForDeckID(user.ID, deck.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		cardReviews, err = store.CardReviews.AllByUserID(user.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(cardReviews) != 3 {
+			t.Fatalf("Expected 3 records: %+q", cardReviews)
 		}
 	}
 }
