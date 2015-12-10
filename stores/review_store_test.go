@@ -39,7 +39,7 @@ func TestReviewStoreInsert(t *testing.T) {
 			t.Fatal(err)
 		}
 		if len(cardReviews) != 1 {
-			t.Fatalf("Only expeted 1 record: %+v", cardReviews)
+			t.Fatalf("Only expected 1 record: %+v", cardReviews)
 		}
 		got := cardReviews[0]
 		if got.CardID != review.CardID {
@@ -83,6 +83,47 @@ func TestReviewStoreInsert_CantDuplicateCardIDPerUserID(t *testing.T) {
 		}
 		if err := store.Reviews.Insert(review); err == nil {
 			t.Fatal("UserID and CardID should be unique")
+		}
+	}
+}
+
+func TestEnableAllForDeckID(t *testing.T) {
+	for _, store := range setupStores(t) {
+		user := newUser("maartencls@gmail.com")
+		if err := store.Users.Insert(user); err != nil {
+			t.Fatal(err)
+		}
+
+		deck := newDeck("TestDeck")
+		disabledDeck := newDeck("Disabled deck")
+		for _, deck := range []*common.Deck{deck, disabledDeck} {
+			if err := store.Decks.Insert(deck); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		cards := []*common.Card{
+			newCard(deck.ID, "Test 1"),
+			newCard(deck.ID, "Test 2"),
+			newCard(disabledDeck.ID, "DISABLED"),
+		}
+		for _, card := range cards {
+			if err := store.Cards.Insert(card); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		err := store.Reviews.EnableAllForDeckID(user.ID, deck.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		cardReviews, err := store.CardReviews.AllByUserID(user.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(cardReviews) != 2 {
+			t.Fatalf("Only expected 2 records: %+q", cardReviews)
 		}
 	}
 }

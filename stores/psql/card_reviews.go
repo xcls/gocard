@@ -22,7 +22,9 @@ const (
 
 	  d.id AS deck_id,
 	  d.name AS deck_name
-	FROM reviews r, cards c, decks d`
+	FROM reviews r
+	JOIN cards c ON c.id = r.card_id
+	JOIN decks d ON d.id = c.deck_id`
 )
 
 type CardReviews dbmapStore

@@ -61,3 +61,14 @@ func (s *Reviews) Insert(model *common.Review) error {
 	*model = *record.ToModel()
 	return nil
 }
+
+func (s *Reviews) EnableAllForDeckID(userID int64, deckID int64) error {
+	_, err := s.DbMap.Exec(`
+	INSERT INTO reviews (card_id, user_id, enabled, ease_factor, interval, due_on)
+	SELECT c.id, $1, true, 2.5, 0, NOW()
+	FROM cards c
+	WHERE c.id NOT IN (SELECT card_id FROM reviews WHERE user_id = $1)
+	AND c.deck_id = $2
+	`, userID, deckID)
+	return err
+}

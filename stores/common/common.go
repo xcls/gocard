@@ -139,6 +139,7 @@ type CardReviewStore interface {
 
 type ReviewStore interface {
 	Insert(*Review) error
+	EnableAllForDeckID(userID int64, deckID int64) error
 }
 
 type UserStore interface {
