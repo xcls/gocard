@@ -29,6 +29,7 @@ func StartServer() {
 	r.HandleFunc("/login", withContext(LoginHandler))
 	r.HandleFunc("/logout", withContext(LogoutHandler))
 	r.HandleFunc("/register", withContext(RegisterHandler))
+	r.HandleFunc("/review", withContext(ReviewHandler))
 	r.HandleFunc("/decks/new", withContext(NewDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}", withContext(ShowDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", withContext(NewCardHandler))
@@ -94,12 +95,11 @@ func handlerInternalError(rc *RequestContext, err error) {
 }
 
 func indexHandler(rc *RequestContext) error {
-	decks, err := stores.Store.Decks.All()
+	decks, err := rc.Store.Decks.All()
 	if err != nil {
 		return err
 	}
-	rc.HTML(http.StatusOK, "home", tplVars{"decks": decks})
-	return nil
+	return rc.HTML(http.StatusOK, "home", tplVars{"decks": decks})
 }
 
 func errorHandler(f func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {

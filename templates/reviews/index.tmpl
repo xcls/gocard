@@ -1,0 +1,25 @@
+<h2>Review</h2>
+
+{{if .CurrentReview}}
+<div class="well">
+  <h6>
+    {{.CurrentReview.DeckName}}<br>
+    <small>{{.CurrentReview.CardContext}}</small>
+  </h6>
+  <p>{{.CurrentReview.CardFront}}</p>
+</div>
+  <table class="table">
+    {{range .CardReviews}}
+    <tr>
+      <td>{{.DeckName}}</td>
+      <td>{{.CardContext}}</td>
+      <td>{{.CardFront}}</td>
+    </tr>
+    {{end}}
+  </table>
+{{else}}
+  <div class="jumbotron">
+    <h1>Congratulations</h1>
+    <p>You have reviewed everything for today.</p>
+  </div>
+{{end}}
