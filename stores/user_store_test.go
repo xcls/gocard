@@ -4,18 +4,10 @@ import (
 	"testing"
 
 	"github.com/mcls/gocard/stores/common"
-	"github.com/mcls/gocard/stores/psql"
-	"github.com/mcls/gocard/testutil"
 )
 
-func setupUserStores(t *testing.T) []*common.Store {
-	db := testutil.ConnectDB(t)
-	testutil.ResetDB(t, db)
-	return []*common.Store{psql.NewStore(db)}
-}
-
 func TestUserStoreInsert(t *testing.T) {
-	for _, store := range setupUserStores(t) {
+	for _, store := range setupStores(t) {
 		user := &common.User{
 			Email:             "maartencls@gmail.com",
 			EncryptedPassword: "$ecret$tuff",
@@ -36,7 +28,7 @@ func TestUserStoreInsert(t *testing.T) {
 }
 
 func TestUserStoreInsert_CantDuplicateEmail(t *testing.T) {
-	for _, store := range setupUserStores(t) {
+	for _, store := range setupStores(t) {
 		u1 := &common.User{
 			Email:             "maartencls@gmail.com",
 			EncryptedPassword: "$ecret$tuff",
@@ -58,7 +50,7 @@ func TestUserStoreInsert_CantDuplicateEmail(t *testing.T) {
 }
 
 func TestUserStoreAuthenticate(t *testing.T) {
-	for _ = range setupUserStores(t) {
+	for _ = range setupStores(t) {
 		user := &common.User{Email: "maartencls@gmail.com"}
 		err := user.SetPassword("secret")
 		if err != nil {
@@ -105,16 +97,8 @@ func TestUserStoreAuthenticate(t *testing.T) {
 	}
 }
 
-func newUser(email string, optPass ...string) *common.User {
-	user := &common.User{Email: email, EncryptedPassword: "NOT_SET"}
-	if len(optPass) > 0 {
-		user.SetPassword(optPass[0])
-	}
-	return user
-}
-
 func TestUserStoreFindByEmail(t *testing.T) {
-	for _ = range setupUserStores(t) {
+	for _ = range setupStores(t) {
 		var err error
 		u1 := newUser("maartencls@gmail.com")
 		u2 := newUser("quintencls@gmail.com")

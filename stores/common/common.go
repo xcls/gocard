@@ -19,8 +19,9 @@ const (
 type Store struct {
 	Cards        CardStore
 	Decks        DeckStore
-	Users        UserStore
+	Reviews      ReviewStore
 	UserSessions UserSessionStore
+	Users        UserStore
 }
 
 type Card struct {
@@ -37,6 +38,16 @@ type Deck struct {
 	Name      string
 	CreatedAt time.Time
 	// UpdatedAt time.Time
+}
+
+type Review struct {
+	ID         int64
+	EaseFactor float64   // The E-Factor is used to determine next interval length. Should be 1.3 <= EF <= 2.5
+	Interval   int64     // Indicates the interval in days
+	DueOn      time.Time // When the next review is due
+	CardID     int64
+	UserID     int64
+	CreatedAt  time.Time
 }
 
 type User struct {
@@ -99,6 +110,11 @@ type DeckStore interface {
 	Insert(deck *Deck) error
 	Find(id int64) (*Deck, error)
 	All() ([]*Deck, error)
+}
+
+type ReviewStore interface {
+	Insert(*Review) error
+	// AllByUserID(int64) ([]*Review, error)
 }
 
 type UserStore interface {

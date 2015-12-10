@@ -1,8 +1,6 @@
 package migrations
 
 import (
-	"fmt"
-
 	"github.com/mcls/nomad"
 	"github.com/mcls/nomad/pg"
 )
