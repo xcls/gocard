@@ -37,6 +37,10 @@ func (c *RequestContext) RedirectWithFlash(url, msg string) error {
 	if err := c.AddFlash(msg); err != nil {
 		return err
 	}
+	return c.Redirect(url)
+}
+
+func (c *RequestContext) Redirect(url string) error {
 	http.Redirect(c.Writer, c.Request, url, http.StatusFound)
 	return nil
 }

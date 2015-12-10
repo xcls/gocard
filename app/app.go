@@ -30,6 +30,8 @@ func StartServer() {
 	r.HandleFunc("/logout", withContext(LogoutHandler))
 	r.HandleFunc("/register", withContext(RegisterHandler))
 	r.HandleFunc("/review", withContext(ReviewHandler))
+	r.HandleFunc("/review/answer", withContext(AnswerReviewHandler)).Methods("POST")
+
 	r.HandleFunc("/decks/new", withContext(NewDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}", withContext(ShowDeckHandler))
 	r.HandleFunc("/decks/{id:[0-9]+}/cards/new", withContext(NewCardHandler))

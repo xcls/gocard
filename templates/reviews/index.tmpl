@@ -7,6 +7,14 @@
     <small>{{.CurrentReview.CardContext}}</small>
   </h6>
   <p>{{.CurrentReview.CardFront}}</p>
+
+  {{range .Answers}}
+  <form action="/review/answer" method="POST">
+    <input type="hidden" name="Rating" value="{{.Rating}}">
+    <input type="hidden" name="ReviewID" value="{{.ReviewID}}">
+    <input type="submit" value="{{.Rating}}">
+  </form>
+  {{end}}
 </div>
   <table class="table">
     {{range .CardReviews}}
