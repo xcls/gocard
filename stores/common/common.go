@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"math"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -14,6 +15,8 @@ var ErrUserAuthFailed = errors.New("Email and password don't match or user doesn
 
 const (
 	UserPasswordCost = 11
+	MinEF            = 1.3
+	MaxEF            = 2.5
 )
 
 type Store struct {
@@ -63,12 +66,42 @@ type Deck struct {
 type Review struct {
 	ID         int64
 	Enabled    bool      // Enabled for review or not?
-	EaseFactor float64   // The E-Factor is used to determine next interval length. Should be 1.3 <= EF <= 2.5
-	Interval   int64     // Indicates the interval in days
+	EaseFactor float64   // The E-Factor is used to determine next interval length
+	Interval   int64     // Indicates the last interval in days
 	DueOn      time.Time // When the next review is due
 	CardID     int64
 	UserID     int64
 	CreatedAt  time.Time
+}
+
+func (r *Review) AddRating(rating int64) error {
+	if rating < 0 || rating > 5 {
+		return errors.New("rating must be between 0 and 5")
+	}
+	r.EaseFactor = UpdateEF(r.EaseFactor, rating)
+	r.Interval = UpdateInterval(r.Interval, r.EaseFactor)
+	return nil
+}
+
+// UpdateEF calculates the new ease factor based on the rating
+//
+//		EF':=EF+(0.1-(5-q)*(0.08+(5-q)*0.02))
+//
+// EF will never be lower than 1.3 or higher than 2.5
+func UpdateEF(ef float64, rating int64) float64 {
+	rc := float64(5 - rating)
+	nef := ef + (0.1 - rc*(0.08+rc*0.02))
+	if nef > MaxEF {
+		nef = MaxEF
+	} else if nef < MinEF {
+		nef = MinEF
+	}
+	return nef
+}
+
+func UpdateInterval(days int64, ef float64) int64 {
+	x := float64(days) * float64(ef)
+	return int64(math.Ceil(x))
 }
 
 type User struct {
