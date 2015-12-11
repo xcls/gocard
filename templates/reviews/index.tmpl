@@ -7,6 +7,10 @@
     <small>{{.CurrentReview.CardContext}}</small>
   </h6>
   <p>{{.CurrentReview.CardFront}}</p>
+  <pre>
+EF: {{.CurrentReview.EaseFactor}}
+Interval: {{.CurrentReview.Interval}} days
+Due: {{.CurrentReview.DueOn}}</pre>
 
   {{range .Answers}}
   <form action="/review/answer" method="POST">
