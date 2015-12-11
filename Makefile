@@ -31,3 +31,6 @@ install_daemon:
 
 resetdb:
 	dropdb gocard_dev; createdb gocard_dev; gocard migration run; gocard seed
+
+resettestdb:
+	dropdb gocard_test; createdb gocard_test
