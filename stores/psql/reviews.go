@@ -81,7 +81,7 @@ func (s *Reviews) ChangeEnabledForUserDeck(enabled bool, userID, deckID int64) e
 func (s *Reviews) insertMissingForUserDeck(userID, deckID int64) error {
 	_, err := s.DbMap.Exec(`
 	INSERT INTO reviews (card_id, user_id, enabled, ease_factor, interval, due_on)
-	SELECT c.id, $1, true, 2.5, 0, NOW()
+	SELECT c.id, $1, true, 2.5, 1, NOW()
 	FROM cards c
 	WHERE c.id NOT IN (SELECT card_id FROM reviews WHERE user_id = $1)
 	AND c.deck_id = $2
