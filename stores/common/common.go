@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"time"
@@ -15,8 +16,11 @@ var ErrUserAuthFailed = errors.New("Email and password don't match or user doesn
 
 const (
 	UserPasswordCost = 11
-	MinEF            = 1.3
-	MaxEF            = 2.5
+
+	MinEF     = 1.3
+	MaxEF     = 2.5
+	MinRating = 0
+	MaxRating = 5
 )
 
 type Store struct {
@@ -75,8 +79,9 @@ type Review struct {
 }
 
 func (r *Review) AddRating(rating int64) error {
-	if rating < 0 || rating > 5 {
-		return errors.New("rating must be between 0 and 5")
+	if rating < MinRating || rating > MaxRating {
+		return fmt.Errorf("rating must be between %d and %d",
+			MinRating, MaxRating)
 	}
 	r.EaseFactor = UpdateEF(r.EaseFactor, rating)
 	r.Interval = UpdateInterval(r.Interval, r.EaseFactor)

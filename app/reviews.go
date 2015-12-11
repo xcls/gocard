@@ -36,10 +36,9 @@ func ReviewHandler(rc *RequestContext) error {
 
 	var answers []*AnswerForm
 	if currentReview != nil {
-		answers = make([]*AnswerForm, 5)
-		for i := 0; i < 5; i++ {
-			rating := int64(i + 1)
-			answers[i] = NewAnswerForm(currentReview, rating)
+		answers = make([]*AnswerForm, common.MaxRating+1)
+		for i := common.MinRating; i <= common.MaxRating; i++ {
+			answers[i] = NewAnswerForm(currentReview, int64(i))
 		}
 	}
 	return rc.HTML(http.StatusOK, "reviews/index", tplVars{
