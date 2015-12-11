@@ -54,5 +54,7 @@ func AnswerReviewHandler(rc *RequestContext) error {
 		return err
 	}
 	applog.Printf("Gave a rating of %d", form.Rating)
+	// TODO Check correct user etc..
+	rc.Store.AnswerReview(form.ReviewID, form.Rating)
 	return rc.Redirect("/review")
 }

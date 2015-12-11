@@ -62,6 +62,15 @@ func (s *Reviews) Insert(model *common.Review) error {
 	return nil
 }
 
+func (s *Reviews) Find(id int64) (*common.Review, error) {
+	var record *ReviewRecord
+	err := s.DbMap.SelectOne(&record, "SELECT * FROM reviews WHERE id = $1", id)
+	if err != nil {
+		return nil, err
+	}
+	return record.ToModel(), nil
+}
+
 func (s *Reviews) ChangeEnabledForUserDeck(enabled bool, userID, deckID int64) error {
 	if enabled {
 		// Create missing reviews so they can be enabled

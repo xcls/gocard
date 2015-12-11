@@ -33,6 +33,23 @@ type Store struct {
 	Users        UserStore
 }
 
+func (s *Store) AnswerReview(reviewID, rating int64) error {
+	review, err := s.Reviews.Find(reviewID)
+	if err != nil {
+		return err
+	}
+	ans := &Answer{
+		UserID: review.UserID,
+		CardID: review.CardID,
+		Rating: rating,
+	}
+
+	// TODO Check review belongs to current user
+	// TODO Update the ease factor and interval of the review
+
+	return s.Answers.Insert(ans)
+}
+
 type Answer struct {
 	ID        int64
 	Rating    int64
@@ -191,6 +208,7 @@ type CardReviewStore interface {
 
 type ReviewStore interface {
 	Insert(*Review) error
+	Find(int64) (*Review, error)
 	ChangeEnabledForUserDeck(enabled bool, userID, deckID int64) error
 }
 
