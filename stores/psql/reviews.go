@@ -72,6 +72,17 @@ func (s *Reviews) Find(id int64) (*common.Review, error) {
 	return record.ToModel(), nil
 }
 
+func (s *Reviews) Update(model *common.Review) error {
+	record := new(ReviewRecord).FromModel(model)
+	_, err := s.DbMap.Update(record)
+	if err != nil {
+		return err
+	}
+	// Update original model with values from db
+	*model = *record.ToModel()
+	return nil
+}
+
 func (s *Reviews) ChangeEnabledForUserDeck(enabled bool, userID, deckID int64) error {
 	if enabled {
 		// Create missing reviews so they can be enabled

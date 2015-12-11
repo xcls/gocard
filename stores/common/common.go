@@ -34,6 +34,7 @@ type Store struct {
 }
 
 func (s *Store) AnswerReview(reviewID, rating int64) error {
+	var err error
 	review, err := s.Reviews.Find(reviewID)
 	if err != nil {
 		return err
@@ -44,8 +45,18 @@ func (s *Store) AnswerReview(reviewID, rating int64) error {
 		Rating: rating,
 	}
 
-	// TODO Check review belongs to current user
-	// TODO Update the ease factor and interval of the review
+	// FIXME(mcls): Check review belongs to current user
+
+	// FIXME(mcls): Use database transactions
+
+	// FIXME(mcls): Only update the ease factor and interval if this is the
+	// first answer of today
+	if err := review.AddRating(rating); err != nil {
+		return err
+	}
+	if err := s.Reviews.Update(review); err != nil {
+		return err
+	}
 
 	return s.Answers.Insert(ans)
 }
@@ -210,6 +221,7 @@ type CardReviewStore interface {
 type ReviewStore interface {
 	Insert(*Review) error
 	Find(int64) (*Review, error)
+	Update(*Review) error
 	ChangeEnabledForUserDeck(enabled bool, userID, deckID int64) error
 }
 

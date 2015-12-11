@@ -29,7 +29,6 @@ func NewStore(db *sql.DB) *common.Store {
 func newDbMap(db *sql.DB) *gorp.DbMap {
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
 	dbmap.TraceOn("(SQL)", config.DefaultLogger())
-	dbmap.TraceOff() // FIXME: Disable for tests only?
 	dbmap.AddTableWithName(AnswerRecord{}, "answers").SetKeys(true, "id")
 	dbmap.AddTableWithName(CardRecord{}, "cards").SetKeys(true, "id")
 	dbmap.AddTableWithName(DeckRecord{}, "decks").SetKeys(true, "id")
