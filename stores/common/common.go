@@ -95,6 +95,9 @@ type CardReview struct {
 
 	DeckID   int64
 	DeckName string
+
+	LastAnswerRating int64
+	LastAnswerAt     time.Time
 }
 
 type Deck struct {

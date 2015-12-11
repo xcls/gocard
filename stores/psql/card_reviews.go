@@ -1,36 +1,14 @@
 package psql
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/mcls/gocard/stores/common"
+	"gopkg.in/gorp.v1"
 )
 
 const (
-	SqlSelect = `SELECT
-	  r.id AS review_id,
-	  r.enabled AS enabled,
-	  r.ease_factor AS ease_factor,
-	  r.interval AS interval,
-	  r.due_on AS due_on,
-	  r.user_id AS user_id,
-
-	  c.id AS card_id,
-	  c.context AS card_context,
-	  c.front AS card_front,
-	  c.back AS card_back,
-
-	  d.id AS deck_id,
-	  d.name AS deck_name
-	FROM reviews r`
-
-	SqlBasic = SqlSelect +
-		" JOIN cards c ON c.id = r.card_id" +
-		" JOIN decks d ON d.id = c.deck_id"
-
-	SqlWithAnswers = SqlBasic +
-		" LEFT JOIN answers ON r.card_id = answers.card_id AND r.user_id = answers.user_id"
+	SqlBasic = "SELECT * FROM user_cards"
 )
 
 type CardReviews dbmapStore
@@ -50,10 +28,13 @@ type CardReviewRecord struct {
 
 	DeckID   int64  `db:"deck_id"`
 	DeckName string `db:"deck_name"`
+
+	LastAnswerRating int64         `db:"last_answer_rating"`
+	LastAnswerAt     gorp.NullTime `db:"last_answer_at"`
 }
 
 func (r *CardReviewRecord) ToModel() *common.CardReview {
-	return &common.CardReview{
+	m := &common.CardReview{
 		ID:         r.ID,
 		Enabled:    r.Enabled,
 		EaseFactor: r.EaseFactor,
@@ -68,26 +49,13 @@ func (r *CardReviewRecord) ToModel() *common.CardReview {
 
 		DeckID:   r.DeckID,
 		DeckName: r.DeckName,
+
+		LastAnswerRating: r.LastAnswerRating,
 	}
-}
-
-func (r *CardReviewRecord) FromModel(m *common.CardReview) *CardReviewRecord {
-	return &CardReviewRecord{
-		ID:         m.ID,
-		Enabled:    m.Enabled,
-		EaseFactor: m.EaseFactor,
-		Interval:   m.Interval,
-		DueOn:      m.DueOn,
-		UserID:     m.UserID,
-
-		CardID:      m.CardID,
-		CardContext: m.CardContext,
-		CardFront:   m.CardFront,
-		CardBack:    m.CardBack,
-
-		DeckID:   m.DeckID,
-		DeckName: m.DeckName,
+	if r.LastAnswerAt.Valid {
+		m.LastAnswerAt = r.LastAnswerAt.Time
 	}
+	return m
 }
 
 func (s *CardReviews) AllByUserID(userID int64) ([]*common.CardReview, error) {
@@ -114,14 +82,9 @@ func (s *CardReviews) EnabledByUserID(userID int64) ([]*common.CardReview, error
 // date, or if the last answer for that card was lower than 3.
 func (s *CardReviews) DueAt(userID int64, ts time.Time) ([]*common.CardReview, error) {
 	var rows []*CardReviewRecord
-	lastRatingSQL := "SELECT rating FROM answers a" +
-		" WHERE a.card_id = c.id AND a.user_id = r.user_id" +
-		" ORDER BY a.created_at DESC LIMIT 1"
-	sql := SqlWithAnswers +
-		" WHERE r.user_id = $1 AND enabled = true" +
-		fmt.Sprintf(" AND (r.due_on <= $2 OR coalesce((%s), 0) < 3)", lastRatingSQL) +
-		" GROUP BY r.id, c.id, d.id"
-
+	sql := "SELECT * FROM user_cards " +
+		" WHERE user_id = $1 AND enabled = true" +
+		" AND (due_on <= $2 OR coalesce(last_answer_rating, 0) < 3)"
 	_, err := s.DbMap.Select(&rows, sql, userID, ts)
 	if err != nil {
 		return nil, err
