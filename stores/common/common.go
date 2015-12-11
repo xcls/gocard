@@ -24,12 +24,21 @@ const (
 )
 
 type Store struct {
+	Answers      AnswerStore
 	CardReviews  CardReviewStore
 	Cards        CardStore
 	Decks        DeckStore
 	Reviews      ReviewStore
 	UserSessions UserSessionStore
 	Users        UserStore
+}
+
+type Answer struct {
+	ID        int64
+	Rating    int64
+	CardID    int64
+	UserID    int64
+	CreatedAt time.Time
 }
 
 type Card struct {
@@ -155,6 +164,10 @@ func generateSessionID() string {
 		return ""
 	}
 	return base64.URLEncoding.EncodeToString(b)
+}
+
+type AnswerStore interface {
+	Insert(*Answer) error
 }
 
 type CardStore interface {

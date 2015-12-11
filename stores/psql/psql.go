@@ -15,6 +15,7 @@ type dbmapStore struct {
 func NewStore(db *sql.DB) *common.Store {
 	dbmap := newDbMap(db)
 	return &common.Store{
+		Answers:      &Answers{DbMap: dbmap},
 		CardReviews:  &CardReviews{DbMap: dbmap},
 		Cards:        &Cards{DbMap: dbmap},
 		Decks:        &Decks{DbMap: dbmap},
@@ -28,6 +29,7 @@ func NewStore(db *sql.DB) *common.Store {
 func newDbMap(db *sql.DB) *gorp.DbMap {
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
 	dbmap.TraceOn("(SQL)", config.DefaultLogger())
+	dbmap.AddTableWithName(AnswerRecord{}, "answers").SetKeys(true, "id")
 	dbmap.AddTableWithName(CardRecord{}, "cards").SetKeys(true, "id")
 	dbmap.AddTableWithName(DeckRecord{}, "decks").SetKeys(true, "id")
 	dbmap.AddTableWithName(ReviewRecord{}, "reviews").SetKeys(true, "id")

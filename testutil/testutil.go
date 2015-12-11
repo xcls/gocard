@@ -40,6 +40,7 @@ func reconnectDB(t *testing.T) *sql.DB {
 
 func ResetDB(t *testing.T, db *sql.DB) {
 	tables := []string{
+		"answers",
 		"reviews",
 		"cards",
 		"decks",
