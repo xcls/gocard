@@ -12,13 +12,21 @@ EF: {{.CurrentReview.EaseFactor}}
 Interval: {{.CurrentReview.Interval}} days
 Due: {{.CurrentReview.DueOn}}</pre>
 
-  {{range .Answers}}
-  <form action="/review/answer" method="POST">
-    <input type="hidden" name="Rating" value="{{.Rating}}">
-    <input type="hidden" name="ReviewID" value="{{.ReviewID}}">
-    <input type="submit" value="{{.Rating}}">
-  </form>
-  {{end}}
+  <div class="row">
+    <div class="col-xs-3">
+      <div class="row">
+        {{range .Answers}}
+        <div class="col-xs-2">
+          <form action="/review/answer" method="POST">
+            <input type="hidden" name="Rating" value="{{.Rating}}">
+            <input type="hidden" name="ReviewID" value="{{.ReviewID}}">
+            <input class="btn btn-default" type="submit" value="{{.Rating}}">
+          </form>
+        </div>
+        {{end}}
+      </div>
+  </div>
+  </div>
 </div>
   <table class="table">
     {{range .CardReviews}}
