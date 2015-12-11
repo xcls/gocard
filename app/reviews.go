@@ -2,6 +2,7 @@ package app
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/mcls/gocard/stores/common"
 )
@@ -21,7 +22,7 @@ func NewAnswerForm(cr *common.CardReview, rating int64) *AnswerForm {
 }
 
 func ReviewHandler(rc *RequestContext) error {
-	crs, err := rc.Store.CardReviews.EnabledByUserID(rc.CurrentUser.ID)
+	crs, err := rc.Store.CardReviews.DueAt(rc.CurrentUser.ID, time.Now())
 	if err != nil {
 		return err
 	}

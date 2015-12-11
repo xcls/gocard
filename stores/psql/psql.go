@@ -29,9 +29,10 @@ func NewStore(db *sql.DB) *common.Store {
 func newDbMap(db *sql.DB) *gorp.DbMap {
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
 	dbmap.TraceOn("(SQL)", config.DefaultLogger())
-	dbmap.TraceOff()
+	// dbmap.TraceOff()
 	dbmap.AddTableWithName(AnswerRecord{}, "answers").SetKeys(true, "id")
 	dbmap.AddTableWithName(CardRecord{}, "cards").SetKeys(true, "id")
+	dbmap.AddTableWithName(CardReviewRecord{}, "user_cards").SetKeys(true, "review_id")
 	dbmap.AddTableWithName(DeckRecord{}, "decks").SetKeys(true, "id")
 	dbmap.AddTableWithName(ReviewRecord{}, "reviews").SetKeys(true, "id")
 	dbmap.AddTableWithName(UserRecord{}, "users").SetKeys(true, "id")

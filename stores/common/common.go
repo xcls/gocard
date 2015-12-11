@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"time"
 
@@ -35,13 +36,13 @@ type Store struct {
 
 func (s *Store) AnswerReview(reviewID, rating int64) error {
 	var err error
-	review, err := s.Reviews.Find(reviewID)
+	cr, err := s.CardReviews.Find(reviewID)
 	if err != nil {
 		return err
 	}
 	ans := &Answer{
-		UserID: review.UserID,
-		CardID: review.CardID,
+		UserID: cr.UserID,
+		CardID: cr.CardID,
 		Rating: rating,
 	}
 
@@ -49,13 +50,22 @@ func (s *Store) AnswerReview(reviewID, rating int64) error {
 
 	// FIXME(mcls): Use database transactions
 
-	// FIXME(mcls): Only update the ease factor and interval if this is the
+	log.Printf("%q", cr)
+	log.Printf("%v", cr)
+	log.Printf("%+v", cr)
+	// Only update the ease factor and interval if this is the
 	// first answer of today
-	if err := review.AddRating(rating); err != nil {
-		return err
-	}
-	if err := s.Reviews.Update(review); err != nil {
-		return err
+	if cr.LastAnswerAt.Before(time.Now().Truncate(24 * time.Hour)) {
+		review, err := s.Reviews.Find(cr.ID)
+		if err != nil {
+			return err
+		}
+		if err := review.AddRating(rating); err != nil {
+			return err
+		}
+		if err := s.Reviews.Update(review); err != nil {
+			return err
+		}
 	}
 
 	return s.Answers.Insert(ans)
@@ -125,6 +135,7 @@ func (r *Review) AddRating(rating int64) error {
 	}
 	r.EaseFactor = UpdateEF(r.EaseFactor, rating)
 	r.Interval = UpdateInterval(r.Interval, r.EaseFactor)
+	r.DueOn = r.DueOn.Add(time.Duration(r.Interval) * 24 * time.Hour)
 	return nil
 }
 
@@ -216,6 +227,7 @@ type DeckStore interface {
 }
 
 type CardReviewStore interface {
+	Find(int64) (*CardReview, error)
 	AllByUserID(userID int64) ([]*CardReview, error)
 	EnabledByUserID(userID int64) ([]*CardReview, error)
 	DueAt(userID int64, ts time.Time) ([]*CardReview, error)

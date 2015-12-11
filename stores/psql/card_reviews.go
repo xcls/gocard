@@ -58,6 +58,19 @@ func (r *CardReviewRecord) ToModel() *common.CardReview {
 	return m
 }
 
+func (s *CardReviews) Find(reviewID int64) (*common.CardReview, error) {
+	var record *CardReviewRecord
+	err := s.DbMap.SelectOne(
+		&record,
+		"SELECT * FROM user_cards WHERE review_id = $1",
+		reviewID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return record.ToModel(), nil
+}
+
 func (s *CardReviews) AllByUserID(userID int64) ([]*common.CardReview, error) {
 	var rows []*CardReviewRecord
 	sql := SqlBasic + ` WHERE user_id = $1`
