@@ -1,13 +1,14 @@
 package psql
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/mcls/gocard/stores/common"
 )
 
 const (
-	SqlStart = `SELECT
+	SqlSelect = `SELECT
 	  r.id AS review_id,
 	  r.enabled AS enabled,
 	  r.ease_factor AS ease_factor,
@@ -22,9 +23,14 @@ const (
 
 	  d.id AS deck_id,
 	  d.name AS deck_name
-	FROM reviews r
-	JOIN cards c ON c.id = r.card_id
-	JOIN decks d ON d.id = c.deck_id`
+	FROM reviews r`
+
+	SqlBasic = SqlSelect +
+		" JOIN cards c ON c.id = r.card_id" +
+		" JOIN decks d ON d.id = c.deck_id"
+
+	SqlWithAnswers = SqlBasic +
+		" LEFT JOIN answers ON r.card_id = answers.card_id AND r.user_id = answers.user_id"
 )
 
 type CardReviews dbmapStore
@@ -86,7 +92,7 @@ func (r *CardReviewRecord) FromModel(m *common.CardReview) *CardReviewRecord {
 
 func (s *CardReviews) AllByUserID(userID int64) ([]*common.CardReview, error) {
 	var rows []*CardReviewRecord
-	sql := SqlStart + ` WHERE user_id = $1`
+	sql := SqlBasic + ` WHERE user_id = $1`
 	_, err := s.DbMap.Select(&rows, sql, userID)
 	if err != nil {
 		return nil, err
@@ -96,8 +102,27 @@ func (s *CardReviews) AllByUserID(userID int64) ([]*common.CardReview, error) {
 
 func (s *CardReviews) EnabledByUserID(userID int64) ([]*common.CardReview, error) {
 	var rows []*CardReviewRecord
-	sql := SqlStart + ` WHERE user_id = $1 AND enabled = true`
+	sql := SqlBasic + ` WHERE user_id = $1 AND enabled = true`
 	_, err := s.DbMap.Select(&rows, sql, userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.recordsToModels(rows), nil
+}
+
+// DueAt returns all cards that are due. A card is due if we're passed its due
+// date, or if the last answer for that card was lower than 3.
+func (s *CardReviews) DueAt(userID int64, ts time.Time) ([]*common.CardReview, error) {
+	var rows []*CardReviewRecord
+	lastRatingSQL := "SELECT rating FROM answers a" +
+		" WHERE a.card_id = c.id AND a.user_id = r.user_id" +
+		" ORDER BY a.created_at DESC LIMIT 1"
+	sql := SqlWithAnswers +
+		" WHERE r.user_id = $1 AND enabled = true" +
+		fmt.Sprintf(" AND (r.due_on <= $2 OR coalesce((%s), 0) < 3)", lastRatingSQL) +
+		" GROUP BY r.id, c.id, d.id"
+
+	_, err := s.DbMap.Select(&rows, sql, userID, ts)
 	if err != nil {
 		return nil, err
 	}

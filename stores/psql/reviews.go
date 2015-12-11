@@ -22,6 +22,7 @@ type ReviewRecord struct {
 
 func (r *ReviewRecord) PreInsert(s gorp.SqlExecutor) error {
 	r.CreatedAt = time.Now()
+	r.DueOn = r.CreatedAt
 	return nil
 }
 
