@@ -7,9 +7,9 @@ import (
 	"github.com/gorilla/Schema"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/unrolled/render"
 	"github.com/xcls/gocard/config"
 	"github.com/xcls/gocard/stores"
-	"github.com/unrolled/render"
 )
 
 var decoder = schema.NewDecoder()
@@ -47,7 +47,7 @@ func StartServer() {
 	)
 
 	port := ":8080"
-	applog.Printf("Starting server on %q\n", port)
+	applog.Printf("xStarting server on %q\n", port)
 	applog.Fatal(http.ListenAndServe(port, n))
 }
 
@@ -60,6 +60,12 @@ func withContext(f func(*RequestContext) error) http.HandlerFunc {
 		}
 
 		determineCurrentUser(rc)
+		user := GetCurrentUser(rc.Request)
+		if user != nil {
+			applog.Printf("user: %v", user.Email)
+		} else {
+			applog.Println("user: none")
+		}
 
 		// Request handler
 		if err := f(rc); err != nil {
@@ -87,6 +93,7 @@ func determineCurrentUser(rc *RequestContext) {
 			return
 		}
 		rc.CurrentUser = user
+		rc.Request = SetCurrentUser(rc.Request, user)
 	}
 }
 

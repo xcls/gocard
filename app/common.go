@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/xcls/gocard/stores/common"
+	"golang.org/x/net/context"
 )
 
 type tplVars map[string]interface{}
@@ -78,4 +79,18 @@ func decodeForm(form interface{}, r *http.Request) error {
 		return err
 	}
 	return decoder.Decode(form, r.PostForm)
+}
+
+func SetCurrentUser(r *http.Request, u *common.User) *http.Request {
+	ctx := context.WithValue(r.Context(), "current_user", u)
+	return r.WithContext(ctx)
+}
+
+func GetCurrentUser(r *http.Request) *common.User {
+	val := r.Context().Value("current_user")
+	if user, ok := val.(*common.User); ok {
+		return user
+	} else {
+		return nil
+	}
 }

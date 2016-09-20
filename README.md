@@ -2,6 +2,13 @@
 
 Web-app for sharing and using spaced repetition flash cards.
 
+## Development
+
+```
+make server
+make autotest
+```
+
 ## Features / Roadmap
 
 * Easy to share decks/cards
