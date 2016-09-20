@@ -3,9 +3,9 @@ package stores
 import (
 	"testing"
 
-	"github.com/mcls/gocard/stores/common"
-	"github.com/mcls/gocard/stores/psql"
-	"github.com/mcls/gocard/testutil"
+	"github.com/xcls/gocard/stores/common"
+	"github.com/xcls/gocard/stores/psql"
+	"github.com/xcls/gocard/testutil"
 )
 
 // Store shared test helpers here

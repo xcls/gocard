@@ -1,8 +1,8 @@
 package seed
 
 import (
-	"github.com/mcls/gocard/stores"
-	"github.com/mcls/gocard/stores/common"
+	"github.com/xcls/gocard/stores"
+	"github.com/xcls/gocard/stores/common"
 )
 
 func Run() error {

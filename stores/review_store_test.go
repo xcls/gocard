@@ -3,7 +3,7 @@ package stores
 import (
 	"testing"
 
-	"github.com/mcls/gocard/stores/common"
+	"github.com/xcls/gocard/stores/common"
 )
 
 type reviewStoreFixture struct {

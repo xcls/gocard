@@ -3,9 +3,9 @@ package stores
 import (
 	"log"
 
-	"github.com/mcls/gocard/dbutil"
-	"github.com/mcls/gocard/stores/common"
-	"github.com/mcls/gocard/stores/psql"
+	"github.com/xcls/gocard/dbutil"
+	"github.com/xcls/gocard/stores/common"
+	"github.com/xcls/gocard/stores/psql"
 )
 
 var Store *common.Store

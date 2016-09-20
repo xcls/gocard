@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/mcls/gocard/app"
-	"github.com/mcls/gocard/migrations"
-	"github.com/mcls/gocard/seed"
+	"github.com/xcls/gocard/app"
+	"github.com/xcls/gocard/migrations"
+	"github.com/xcls/gocard/seed"
 
 	"github.com/mcls/nomad"
 	"github.com/spf13/cobra"

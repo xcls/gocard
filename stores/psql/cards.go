@@ -3,7 +3,7 @@ package psql
 import (
 	"time"
 
-	"github.com/mcls/gocard/stores/common"
+	"github.com/xcls/gocard/stores/common"
 	"gopkg.in/gorp.v1"
 )
 

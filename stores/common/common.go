@@ -46,9 +46,9 @@ func (s *Store) AnswerReview(reviewID, rating int64) error {
 		Rating: rating,
 	}
 
-	// FIXME(mcls): Check review belongs to current user
+	// FIXME(xcls): Check review belongs to current user
 
-	// FIXME(mcls): Use database transactions
+	// FIXME(xcls): Use database transactions
 
 	log.Printf("%q", cr)
 	log.Printf("%v", cr)

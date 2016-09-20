@@ -3,8 +3,8 @@ package psql
 import (
 	"database/sql"
 
-	"github.com/mcls/gocard/config"
-	"github.com/mcls/gocard/stores/common"
+	"github.com/xcls/gocard/config"
+	"github.com/xcls/gocard/stores/common"
 	"gopkg.in/gorp.v1"
 )
 

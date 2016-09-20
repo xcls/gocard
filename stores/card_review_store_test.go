@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mcls/gocard/stores/common"
+	"github.com/xcls/gocard/stores/common"
 )
 
 func TestCardReviewStore_DueAt(t *testing.T) {

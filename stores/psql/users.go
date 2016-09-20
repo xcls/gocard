@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/mcls/gocard/stores/common"
+	"github.com/xcls/gocard/stores/common"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gorp.v1"
 )

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mcls/gocard/config"
-	"github.com/mcls/gocard/dbutil"
-	"github.com/mcls/gocard/migrations"
+	"github.com/xcls/gocard/config"
+	"github.com/xcls/gocard/dbutil"
+	"github.com/xcls/gocard/migrations"
 	nomadpg "github.com/mcls/nomad/pg"
 )
 
@@ -29,7 +29,7 @@ func reconnectDB(t *testing.T) *sql.DB {
 
 	runner := nomadpg.NewRunner(testDB, migrations.Migrations)
 
-	// FIXME(mcls): Rollback all migrations?
+	// FIXME(xcls): Rollback all migrations?
 
 	if err := runner.Run(); err != nil {
 		t.Fatal(err)

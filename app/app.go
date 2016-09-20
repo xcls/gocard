@@ -7,8 +7,8 @@ import (
 	"github.com/gorilla/Schema"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
-	"github.com/mcls/gocard/config"
-	"github.com/mcls/gocard/stores"
+	"github.com/xcls/gocard/config"
+	"github.com/xcls/gocard/stores"
 	"github.com/unrolled/render"
 )
 

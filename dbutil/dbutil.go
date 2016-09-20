@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	_ "github.com/lib/pq"
-	"github.com/mcls/gocard/config"
+	"github.com/xcls/gocard/config"
 )
 
 // Connect connects to a database url and returns the handle. Optionally

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/mcls/gocard/stores"
-	"github.com/mcls/gocard/stores/common"
-	"github.com/mcls/gocard/valid"
+	"github.com/xcls/gocard/stores"
+	"github.com/xcls/gocard/stores/common"
+	"github.com/xcls/gocard/valid"
 )
 
 type CardForm struct {

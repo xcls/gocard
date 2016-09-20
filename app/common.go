@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/mcls/gocard/stores/common"
+	"github.com/xcls/gocard/stores/common"
 )
 
 type tplVars map[string]interface{}

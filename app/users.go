@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/mcls/gocard/stores/common"
-	"github.com/mcls/gocard/valid"
+	"github.com/xcls/gocard/stores/common"
+	"github.com/xcls/gocard/valid"
 )
 
 type NewUserForm struct {
