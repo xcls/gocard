@@ -16,3 +16,8 @@ Web-app for sharing and using spaced repetition flash cards.
 
 * Anki: http://ankisrs.net/
 * Spaced Repetition and Learning: http://www.gwern.net/Spaced%20repetition
+
+## Side-project motivation
+
+* https://jvns.ca/blog/2016/09/19/getting-things-done/
+* https://jvns.ca/blog/2016/08/16/how-do-you-work-on-something-important/
