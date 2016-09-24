@@ -5,6 +5,8 @@ Web-app for sharing and using spaced repetition flash cards.
 ## Development
 
 ```
+go get -u github.com/xcls/gocard
+cd $GOPATH/src/github.com/xcls/gocard
 make server
 make autotest
 ```
